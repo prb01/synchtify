@@ -1,0 +1,52 @@
+{
+  "name": "react-redux-firebase-starter",
+  "version": "0.0.1",
+  "private": true,
+  "engines": {
+    "node": "16"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.1.1",
+    "@fortawesome/free-brands-svg-icons": "^6.1.1",
+    "@fortawesome/free-solid-svg-icons": "^6.1.1",
+    "@fortawesome/react-fontawesome": "^0.2.0",
+    "@reduxjs/toolkit": "^1.5.1",
+    "bootstrap": "5.0.2",
+    "express": "^4.18.1",
+    "firebase": "^8.3.3",
+    "firebase-encode": "^0.0.5",
+    "history": "^4.10.1",
+    "node-sass": "^7.0.1",
+    "postcss-custom-properties": "^10.0.0",
+    "react": "^17.0.0",
+    "react-avatar": "^3.10.0",
+    "react-dom": "^17.0.0",
+    "react-firebaseui": "^5.0.2",
+    "react-helmet": "^6.1.0",
+    "react-hook-form": "^7.0.5",
+    "react-redux": "^7.2.3",
+    "react-router-dom": "^6.0.0",
+    "react-scripts": "^4.0.3",
+    "reactstrap": "^9.1.2",
+    "redux": "^4.0.5",
+    "sass": "^1.53.0"
+  },
+  "resolutions": {
+    "//": "See https://stackoverflow.com/questions/70368760/react-uncaught-referenceerror-process-is-not-defined",
+    "react-error-overlay": "6.0.9",
+    "react-scripts/postcss-preset-env/postcss-custom-properties": "^10.0.0"
+  },
+  "scripts": {
+    "dev": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "deploy": "yarn build && firebase deploy"
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
+}

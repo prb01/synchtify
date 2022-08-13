@@ -1,0 +1,27 @@
+$primary: #23272F;
+$secondary: #4ABDAC;
+
+@import "~bootstrap/scss/functions";
+@import "~bootstrap/scss/variables";
+@import "~bootstrap/scss/mixins";
+
+$custom-colors: (
+  "accent": #ff6542,
+  "text": #f8eddd,
+  "alt": #f5b800
+  );
+$theme-colors: map-merge($theme-colors, $custom-colors);
+  
+$custom-spacers: (
+  5: $spacer * 2.5,
+  6: $spacer * 3.5,
+  7: $spacer * 4,
+  8: $spacer * 5,
+  9: $spacer * 6,
+  10: $spacer * 7
+);
+$spacers: map-merge($spacers, $custom-spacers);
+
+$enable-negative-margins: true;
+    
+@import "~bootstrap/scss/bootstrap";
