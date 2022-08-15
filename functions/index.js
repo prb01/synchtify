@@ -20,6 +20,16 @@ const checkUserLoggedIn = (context) => {
   } else return true;
 };
 
+// Check user is accessing their own playlist
+const checkUserIsSelf = (context, userId) => {
+  if (!(context.auth.uid === userId)) {
+    throw new functions.https.HttpsError(
+      "failed-precondition",
+      "Data is not accessible for this user."
+    );
+  } else return true;
+};
+
 // Check user is logged in and an admin to run
 const checkUserIsAdmin = async (context) => {
   const user = await _fetchUserFromDb(context.auth.uid);
@@ -362,7 +372,7 @@ const _fetchUserFromDb = async (uid) => {
   return data;
 };
 
-const _adminRefreshAllCombinedPlaylists = async (context, combo) => {
+const _RefreshCombinedPlaylist = async (context, combo) => {
   // number of times to retry API call if it fails
   const retries = 5;
 
@@ -510,7 +520,7 @@ exports.adminRefreshAllCombinedPlaylists = functions
           for (const combo of combinedPlaylists) {
             await retry(
               3,
-              () => _adminRefreshAllCombinedPlaylists(context, combo),
+              () => _RefreshCombinedPlaylist(context, combo),
               3000,
               combo.name
             );
@@ -522,6 +532,8 @@ exports.adminRefreshAllCombinedPlaylists = functions
         }
       });
     }
+
+    return null;
   });
 
 exports.scheduledAdminRefreshAllCombinedPlaylists = functions
@@ -539,7 +551,7 @@ exports.scheduledAdminRefreshAllCombinedPlaylists = functions
         for (const combo of combinedPlaylists) {
           await retry(
             3,
-            () => _adminRefreshAllCombinedPlaylists(context, combo),
+            () => _RefreshCombinedPlaylist(context, combo),
             3000,
             combo.name
           );
@@ -550,6 +562,29 @@ exports.scheduledAdminRefreshAllCombinedPlaylists = functions
         return reject(error.message);
       }
     });
+  });
+
+exports.refreshNewCombinedPlaylist = functions
+  .runWith({ timeoutSeconds: 90 })
+  .https.onCall(async (data, context) => {
+    const { combo } = data;
+
+    if (checkUserLoggedIn(context) && checkUserIsSelf(context, combo.uid)) {
+      return new Promise(async (resolve, reject) => {
+        try {
+          await retry(
+            3,
+            () => _RefreshCombinedPlaylist(context, combo),
+            3000,
+            combo.name
+          );
+
+          return resolve("Synch Finished");
+        } catch (error) {
+          return reject(error.message);
+        }
+      });
+    }
   });
 
 //END   -- UTILS --
