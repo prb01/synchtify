@@ -4,7 +4,7 @@ import { Controller, useForm, useFieldArray } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Col, Row, Form, FormGroup, Input, Label } from "reactstrap";
 import { createCombinedPlaylist, fetchCombinedPlaylistsByUid } from "redux/spotify";
-import { refreshNewCombinedPlaylist } from "utils/utils";
+import { spotifyService } from "services/spotifyService";
 import { useEffect } from "react";
 
 const CreateComboPlaylist = (props) => {
@@ -48,15 +48,17 @@ const CreateComboPlaylist = (props) => {
 
   // Limit # of playlists
   useEffect(() => {
-    if(fields.length < 2) append("")
-    if(fields.length > 5) remove(fields.length - 1)
-  }, [fields])
+    if (fields.length < 2) append("");
+    if (fields.length > 5) remove(fields.length - 1);
+  }, [fields]);
 
   const onSubmit = async (data) => {
     if (Object.keys(errors).length) {
       alert("Error saving product: " + JSON.stringify(errors));
     } else {
-      const playlists = data.playlists.map((playlist) => JSON.parse(playlist.playlist));
+      const playlists = data.playlists.map((playlist) =>
+        JSON.parse(playlist.playlist)
+      );
 
       const { payload: combinedPlaylistId } = await dispatch(
         createCombinedPlaylist({
@@ -72,9 +74,11 @@ const CreateComboPlaylist = (props) => {
         fetchCombinedPlaylistsByUid({ uid: userData.uid })
       );
 
-      const combo = combinedPlaylists.filter((playlist) => playlist.id === combinedPlaylistId);
+      const combo = combinedPlaylists.filter(
+        (playlist) => playlist.id === combinedPlaylistId
+      );
 
-      await refreshNewCombinedPlaylist(combo[0], userData.access_token);
+      await spotifyService.refreshNewCombinedPlaylist(combo[0]);
 
       reset();
       console.log("added to Spotify & DB");
@@ -136,7 +140,11 @@ const CreateComboPlaylist = (props) => {
                       )}
                     />
                   </Col>
-                  <Col xs={2} sm={2} className="d-flex align-items-center justify-content-start">
+                  <Col
+                    xs={2}
+                    sm={2}
+                    className="d-flex align-items-center justify-content-start"
+                  >
                     <Button
                       outline
                       color="accent"
@@ -153,7 +161,11 @@ const CreateComboPlaylist = (props) => {
           <Row>
             <Col xs={10}></Col>
             <Col xs={2} className="d-flex align-items-center justify-content-start">
-              <Button outline onClick={() => append("")} className="rounded-circle fs-6">
+              <Button
+                outline
+                onClick={() => append("")}
+                className="rounded-circle fs-6"
+              >
                 <FontAwesomeIcon icon={faPlusCircle} />
               </Button>
             </Col>
