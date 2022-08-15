@@ -74,7 +74,7 @@ async function refreshNewCombinedPlaylist(combo) {
   return cloudAPICall("refreshNewCombinedPlaylist", { combo });
 }
 
-export const spotifyService = {
+export const cloudService = {
   getAccessToken,
   getRefreshedAccessToken,
   getMe,

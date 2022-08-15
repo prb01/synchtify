@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { spotifyService } from "services/cloudService";
+import { cloudService } from "services/cloudService";
 import firebaseClient from "firebase/client";
 import firebase from "firebase/app";
 
@@ -71,7 +71,7 @@ export const fetchSpotifyMe = createAsyncThunk(
     try {
       thunkAPI.dispatch(appendData());
 
-      const data = await spotifyService.getMe(payload.access_token);
+      const data = await cloudService.getMe(payload.access_token);
 
       thunkAPI.dispatch(appendDataSuccess({ user: data }));
 
@@ -88,7 +88,7 @@ export const fetchSpotifyPlaylists = createAsyncThunk(
     try {
       thunkAPI.dispatch(appendData());
 
-      const playlists = await spotifyService.getAllPlaylists(
+      const playlists = await cloudService.getAllPlaylists(
         payload.user,
         payload.access_token
       );
@@ -125,7 +125,7 @@ export const createCombinedPlaylist = createAsyncThunk(
   "spotify/createCombinedPlaylist",
   async (payload, thunkAPI) => {
     try {
-      const data = await spotifyService.createPlaylist(
+      const data = await cloudService.createPlaylist(
         payload.spotifyId,
         payload.access_token,
         payload.name
@@ -145,7 +145,7 @@ export const deleteCombinedPlaylist = createAsyncThunk(
   "spotify/deleteCombinedPlaylist",
   async (payload, thunkAPI) => {
     try {
-      await spotifyService.unfollowPlaylist(payload.id, payload.access_token);
+      await cloudService.unfollowPlaylist(payload.id, payload.access_token);
 
       await _deleteCombinedPlaylistFromDb(payload.id);
       thunkAPI.dispatch(removeCombinedPlaylist(payload));

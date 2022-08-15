@@ -12,7 +12,7 @@ import {
   NavbarBrand,
 } from "reactstrap";
 import { adminRefreshAllCombinedPlaylists, spotifyLogin } from "utils/utils";
-import { spotifyService } from "services/cloudService";
+import { cloudService } from "services/cloudService";
 import logoSmall from "../../assets/img/spotlist.svg";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -42,7 +42,7 @@ const Nav = () => {
 
   // admin function to synch all combined playlists
   const handleRefreshCombinedPlaylists = async () => {
-    await spotifyService.adminRefreshAllCombinedPlaylists();
+    await cloudService.adminRefreshAllCombinedPlaylists();
   };
 
   // (re)Connect to Spotify (auth)

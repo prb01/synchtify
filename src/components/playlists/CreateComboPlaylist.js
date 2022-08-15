@@ -4,7 +4,7 @@ import { Controller, useForm, useFieldArray } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Col, Row, Form, FormGroup, Input, Label } from "reactstrap";
 import { createCombinedPlaylist, fetchCombinedPlaylistsByUid } from "redux/spotify";
-import { spotifyService } from "services/cloudService";
+import { cloudService } from "services/cloudService";
 import { useEffect } from "react";
 
 const CreateComboPlaylist = (props) => {
@@ -78,7 +78,7 @@ const CreateComboPlaylist = (props) => {
         (playlist) => playlist.id === combinedPlaylistId
       );
 
-      await spotifyService.refreshNewCombinedPlaylist(combo[0]);
+      await cloudService.refreshNewCombinedPlaylist(combo[0]);
 
       reset();
       console.log("added to Spotify & DB");
