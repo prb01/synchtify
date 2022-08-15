@@ -1,11 +1,15 @@
 import firebase from "firebase/app";
 require("firebase/functions");
-// firebase.functions().useEmulator("localhost", 5001);
+firebase.functions().useEmulator("localhost", 5001);
 
 async function cloudAPICall(cloudFunction, payload) {
-  const _functionCall = firebase.functions().httpsCallable(cloudFunction);
-  const { data } = await _functionCall(payload);
-  return data;
+  try {
+    const _functionCall = firebase.functions().httpsCallable(cloudFunction);
+    const { data } = await _functionCall(payload);
+    return data;
+  } catch (error) {
+    console.log(JSON.stringify(error));
+  }
 }
 
 async function getAccessToken(code, state, redirectURI) {
@@ -66,6 +70,10 @@ async function adminRefreshAllCombinedPlaylists() {
   return cloudAPICall("adminRefreshAllCombinedPlaylists");
 }
 
+async function refreshNewCombinedPlaylist(combo) {
+  return cloudAPICall("refreshNewCombinedPlaylist", { combo });
+}
+
 export const spotifyService = {
   getAccessToken,
   getRefreshedAccessToken,
@@ -78,4 +86,5 @@ export const spotifyService = {
   createPlaylist,
   addSongsToPlaylist,
   adminRefreshAllCombinedPlaylists,
+  refreshNewCombinedPlaylist,
 };
