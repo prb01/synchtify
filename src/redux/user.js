@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import firebaseClient from "firebase/client";
 import firebase from "firebase/app";
-import { spotifyService } from "services/spotifyService";
+import { spotifyService } from "services/cloudService";
 
 const initialState = {
   data: {},

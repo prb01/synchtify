@@ -4,7 +4,7 @@ import { Controller, useForm, useFieldArray } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Col, Row, Form, FormGroup, Input, Label } from "reactstrap";
 import { createCombinedPlaylist, fetchCombinedPlaylistsByUid } from "redux/spotify";
-import { spotifyService } from "services/spotifyService";
+import { spotifyService } from "services/cloudService";
 import { useEffect } from "react";
 
 const CreateComboPlaylist = (props) => {

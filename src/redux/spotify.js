@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { spotifyService } from "services/spotifyService";
+import { spotifyService } from "services/cloudService";
 import firebaseClient from "firebase/client";
 import firebase from "firebase/app";
 
