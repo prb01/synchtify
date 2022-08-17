@@ -27,6 +27,12 @@ body {
   /* box-shadow: -1px 10px 20px 1px rgba(74,189,172, 0.75); */
 }
 
+.navbar-collapse.collapse.show,
+.navbar-collapse.collapsing {
+  background-color: var(--bs-primary);
+  padding: 1rem;
+}
+
 .overlay-bg {
   z-index: 999;
 }
