@@ -32,7 +32,10 @@ export default function Login(props) {
         <div className="row">
           <div className="col-md-3 offset-md-2">
             <h3 className="text-primary">Log in or create an account</h3>
-            <p>Quickly get started by signing in using your existing accounts.</p>
+            <p>
+              Quickly get started by signing in using your existing accounts. Note
+              this does not need to be the same as your Spotify account.
+            </p>
           </div>
           <div className="col-md-6">
             <Component {...props} setForm={setForm} />
@@ -101,18 +104,37 @@ function LoginForm(props) {
     </a>
   );
 
+  function iubendaLoader(w, d) {
+    var s = d.createElement("script"),
+      tag = d.getElementsByTagName("script")[0];
+    s.src = "https://cdn.iubenda.com/iubenda.js";
+    tag.parentNode.insertBefore(s, tag);
+  }
+
   const privacy = (
-    <a href="#" target="_blank">
+    <a
+      href="https://www.iubenda.com/privacy-policy/68367909"
+      className="iubenda-white iubenda-noiframe iubenda-embed iubenda-noiframe "
+      title="Privacy Policy"
+    >
       Privacy Policy
     </a>
   );
 
+  const TermsPrivacy = () => {
+    iubendaLoader(window, document);
+
+    return (
+      <p className="small text-center text-muted font-weight-light">
+        By proceeding, you are agreeing to the {privacy}.
+      </p>
+    );
+  };
+
   const retVal = (
     <Form>
       <FormGroup>
-        <p className="small text-center text-muted font-weight-light">
-          By proceeding, you are agreeing to the {terms} and {privacy}.
-        </p>
+        <TermsPrivacy />
       </FormGroup>
       <Row>
         <Col md={6} className="d-flex justify-content-center">
@@ -124,7 +146,7 @@ function LoginForm(props) {
               onClick={handleGoogleLogin}
             >
               <FontAwesomeIcon icon={faGoogle} className="me-2" />
-              Continue with Google
+              Login with Google
             </Button>
           </FormGroup>
         </Col>
@@ -137,7 +159,7 @@ function LoginForm(props) {
               onClick={handleFacebookLogin}
             >
               <FontAwesomeIcon icon={faFacebook} className="me-2" />
-              Continue with Facebook
+              Login with Facebook
             </Button>
           </FormGroup>
         </Col>
