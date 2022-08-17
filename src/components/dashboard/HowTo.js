@@ -12,7 +12,7 @@ const removalLink = (
 
 const removalEmail = (
   <a
-    href="mailto:contact@prb01.com?subject=Remove me from SpotList"
+    href="mailto:contact@prb01.com?subject=Remove me from Synchtify"
     className="text-accent"
   >
     contact@prb01.com
@@ -83,8 +83,11 @@ const HowTo = ({ modal, toggle, handleConnectSpotify }) => {
           please follow these steps:
         </p>
         <div className="list">
-          <div>Remove SpotList from your {removalLink}</div>
-          <div>Send an email to {removalEmail} with your account info asking to be removed</div>
+          <div>Remove Synchtify from your {removalLink}</div>
+          <div>
+            Send an email to {removalEmail} with your account info asking to be
+            removed
+          </div>
         </div>
       </ModalBody>
       <hr />

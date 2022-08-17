@@ -13,7 +13,7 @@ import {
 } from "reactstrap";
 import { spotifyLogin } from "utils/utils";
 import { cloudService } from "services/cloudService";
-import logoSmall from "../../assets/img/spotlist.svg";
+import logoSmall from "../../assets/img/synchtify-dark.svg";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import HowTo from "components/dashboard/HowTo";
@@ -66,7 +66,7 @@ const Nav = () => {
         expand="sm"
       >
         <NavbarBrand href="/" className="me-auto">
-          <img src={logoSmall} alt="SpotLislogo" className="w-25" />
+          <img src={logoSmall} alt="SpotLislogo" style={{ width: "18%"}} />
         </NavbarBrand>
         <NavbarToggler onClick={toggleNavbar} className="me-2" />
         <Collapse isOpen={!collapsed} navbar>

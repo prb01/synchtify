@@ -5,10 +5,10 @@ const Home = (props) => {
         <div className="position-relative">
           <p className="text-text logo-large text-shadow mb-n4 mb-xl-n5">
             <span className="logo-left">
-              <u>Spot</u>
+              <u>Synch</u>
             </span>
             <span className="logo-right text-secondary">
-              <u>List</u>
+              <u>tify</u>
             </span>
           </p>
         </div>

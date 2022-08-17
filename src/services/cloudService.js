@@ -52,7 +52,7 @@ async function createPlaylist(
   user_id,
   access_token,
   name,
-  description = "Combined playlist made with SpotList (spotlist.prb01.com)"
+  description = "Combined playlist made with Synchtify (synchtify.prb01.com)"
 ) {
   return cloudAPICall("createPlaylist", {
     user_id,

@@ -1,11 +1,11 @@
 [![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-c66648af7eb3fe8bc4f294546bfd86ef473780cde1dea487d3c4ff354943c9ae.svg)](https://classroom.github.com/online_ide?assignment_repo_id=8037725&assignment_repo_type=AssignmentRepo)
-# SpotList | Spotify Playlist Combiner
+# Synchtify | Spotify Playlist Combiner
 
 ## Description
 
-Have you ever wanted to be able to add songs to customize a public playlist in Spotify? Of course you can just clone a public playlist, but what happens if they update it? Are you going to check those playlists every day just to make sure your playlists are in synch? Well, fret no more because the solution is here: SpotList - your friendly Spotify Playlist Combiner with automatic synch.
+Have you ever wanted to be able to add songs to customize a public playlist in Spotify? Of course you can just clone a public playlist, but what happens if they update it? Are you going to check those playlists every day just to make sure your playlists are in synch? Well, fret no more because the solution is here: Synchtify - your friendly Spotify Playlist Combiner with automatic synch.
 
-[Live link to SpotList](https://spotlist.prb01.com)
+[Live link to Synchtify](https://synchtify.prb01.com)
 
 ## Final Deliverable (v1)
 
