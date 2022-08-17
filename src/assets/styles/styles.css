@@ -16,6 +16,7 @@ body {
 .navbar {
   height: 85px;
   max-height: 85px;
+  transition: all 0.5s;
 }
 
 .navbar.scroll {
