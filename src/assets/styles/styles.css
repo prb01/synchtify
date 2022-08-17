@@ -45,6 +45,31 @@ body {
   z-index: 9999;
 }
 
+div.list {
+  counter-reset: list-number;
+  margin-top: 1.3rem;
+}
+
+div.list div {
+  counter-increment: list-number;
+}
+
+div.list div:before {
+  content: counter(list-number);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.6rem;
+  margin-bottom: 0.6rem;
+  margin-left: 0.6rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--bs-primary);
+  background-color: var(--bs-secondary);
+  border-radius: 50%;
+}
+
 .text-shadow {
   text-shadow:
       -1px -1px 5px var(--bs-primary),

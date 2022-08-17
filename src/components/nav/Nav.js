@@ -1,36 +1,40 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleQuestion } from "@fortawesome/free-solid-svg-icons";
 import { faSpotify } from "@fortawesome/free-brands-svg-icons";
 import { useSelector } from "react-redux";
 import {
   Nav as StrapNav,
   NavItem,
-  NavLink,
   Button,
   Navbar,
   Collapse,
   NavbarToggler,
   NavbarBrand,
 } from "reactstrap";
-import { adminRefreshAllCombinedPlaylists, spotifyLogin } from "utils/utils";
+import { spotifyLogin } from "utils/utils";
 import { cloudService } from "services/cloudService";
 import logoSmall from "../../assets/img/spotlist.svg";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import HowTo from "components/dashboard/HowTo";
 
 const Nav = () => {
   const userData = useSelector((state) => state.user.data);
   const [collapsed, setCollapsed] = useState(true);
   const [navScroll, setNavScroll] = useState(false);
-  const navigate = useNavigate()
+  const [modal, setModal] = useState(false);
+  const navigate = useNavigate();
+
+  const toggle = () => setModal(!modal);
 
   // change NavBar to be sticky with bg color & smaller after scroll past
   const changeNav = () => {
     if (window.scrollY >= 40) {
-      setNavScroll(true)
+      setNavScroll(true);
     } else {
-      setNavScroll(false)
+      setNavScroll(false);
     }
-  }
+  };
 
   useEffect(() => {
     changeNav();
@@ -53,20 +57,19 @@ const Nav = () => {
   return (
     <header className="mb-6">
       <Navbar
-        className={`align-items-center w-100 ${navScroll ? "navbar scroll" : "navbar"}`}
+        className={`align-items-center w-100 ${
+          navScroll ? "navbar scroll" : "navbar"
+        }`}
         dark
         fixed="top"
         container="sm"
         expand="sm"
       >
         <NavbarBrand href="/" className="me-auto">
-          <img src={logoSmall} alt="SpotLislogo" className="w-25"/>
+          <img src={logoSmall} alt="SpotLislogo" className="w-25" />
         </NavbarBrand>
-        <NavbarToggler onClick={toggleNavbar} className="me-2"/>
-        <Collapse
-          isOpen={!collapsed}
-          navbar
-        >
+        <NavbarToggler onClick={toggleNavbar} className="me-2" />
+        <Collapse isOpen={!collapsed} navbar>
           <StrapNav pills navbar className="pt-4 pb-4 px-3 ms-auto gap-3">
             {userData.admin && (
               <NavItem className="">
@@ -79,6 +82,22 @@ const Nav = () => {
                 </Button>
               </NavItem>
             )}
+            <NavItem className="">
+              <Button
+                color="secondary"
+                outline
+                className="btn-rounded d-flex gap-2 justify-content-center align-items-center container-sm py-4 py-sm-2"
+                onClick={toggle}
+              >
+                <FontAwesomeIcon icon={faCircleQuestion} />
+                Help
+                <HowTo
+                  modal={modal}
+                  toggle={toggle}
+                  handleConnectSpotify={handleConnectSpotify}
+                />
+              </Button>
+            </NavItem>
             <NavItem className="">
               <Button
                 color="secondary"
