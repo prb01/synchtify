@@ -33,8 +33,10 @@ export default function Login(props) {
           <div className="col-md-3 offset-md-2">
             <h3 className="text-primary">Log in or create an account</h3>
             <p>
-              Quickly get started by signing in using your existing accounts. Note
-              this does not need to be the same as your Spotify account.
+              Quickly get started by signing in using your existing accounts.{" "}
+              <i className="blockquote-footer">
+                (Note this does not need to be the same email as your Spotify account.)
+              </i>
             </p>
           </div>
           <div className="col-md-6">
