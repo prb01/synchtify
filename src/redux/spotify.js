@@ -125,15 +125,14 @@ export const createCombinedPlaylist = createAsyncThunk(
   "spotify/createCombinedPlaylist",
   async (payload, thunkAPI) => {
     try {
-      const data = await cloudService.createPlaylist(
-        payload.spotifyId,
-        payload.access_token,
-        payload.name
+      await _createCombinedPlaylistInDb(
+        payload.id,
+        payload.uid,
+        payload.name,
+        payload.playlists
       );
 
-      await _createCombinedPlaylistInDb(payload.uid, payload.name, data.id, payload.playlists);
-
-      return data.id;
+      return payload.id;
     } catch (error) {
       thunkAPI.dispatch(createDataFailure(error.message));
       return false;
@@ -179,16 +178,16 @@ export async function _fetchAllCombinedPlaylistsFromDb() {
   return data;
 }
 
-async function _createCombinedPlaylistInDb(uid, name, playlist_id, playlists) {
+async function _createCombinedPlaylistInDb(id, uid, name, playlists) {
   const doc = await firebaseClient
     .firestore()
     .collection("combined_playlists")
-    .doc(playlist_id)
+    .doc(id)
     .set({
       uid,
       name,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      playlists,
+      playlists
     });
 
   return doc;
