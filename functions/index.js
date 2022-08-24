@@ -372,7 +372,17 @@ const _fetchUserFromDb = async (uid) => {
   return data;
 };
 
-const _RefreshCombinedPlaylist = async (context, combo) => {
+const _updatePlaylistsInDb = async (id, playlists) => {
+  const doc = await admin
+    .firestore()
+    .collection("combined_playlists")
+    .doc(id)
+    .update({ updatedAt: admin.firestore.FieldValue.serverTimestamp(), playlists });
+
+  return doc;
+};
+
+const _RefreshCombinedPlaylist = async (context, combo, firstRun = null) => {
   // number of times to retry API call if it fails
   const retries = 5;
 
@@ -395,22 +405,59 @@ const _RefreshCombinedPlaylist = async (context, combo) => {
   );
   console.log(`END REFRESHING ACCESS TOKEN (${uid})`);
 
-  //   check playlist still exists, else next
+  // check playlist still exists, else next
   console.log(`START CHECKING PLAYLIST EXISTS (${uid}, ${combo.id})`);
-  const playlist = await retry(
-    retries,
-    (playlistAPI = () =>
-      _getPlaylist(
-        {
-          playlist_id: combo.id,
-          access_token: user.access_token,
-        },
-        context
-      ))
+  const playlist = await retry(retries, () =>
+    _getPlaylist(
+      {
+        playlist_id: combo.id,
+        access_token: user.access_token,
+      },
+      context
+    )
   );
   console.log(`END CHECKING PLAYLIST EXISTS (${uid}, ${combo.id}, ${!!playlist})`);
 
   if (!playlist) return;
+
+  // check if underlying playlists have changed since last refresh
+  console.log(`START CHECK PLAYLIST CHANGES (${uid}, ${combo.id})`);
+  let refresh = false;
+  const newPlaylists = [];
+
+  if (!firstRun) {
+    for (const playlist of combo.playlists) {
+      const spotifyPlaylist = await retry(retries, () =>
+        _getPlaylist(
+          {
+            playlist_id: playlist.id,
+            access_token: user.access_token,
+          },
+          context
+        )
+      );
+
+      console.log({
+        spotSnap: spotifyPlaylist.snapshot_id,
+        dbSnap: playlist.snapshotId,
+        same: spotifyPlaylist.snapshot_id === playlist.snapshotId,
+      });
+
+      if (spotifyPlaylist.snapshot_id !== playlist.snapshotId) {
+        refresh = true;
+      }
+
+      newPlaylists.push({
+        id: spotifyPlaylist.id,
+        name: spotifyPlaylist.name,
+        snapshotId: spotifyPlaylist.snapshot_id,
+      });
+    }
+  }
+
+  console.log(`END CHECK PLAYLIST CHANGES (${uid}, ${combo.id}, ${refresh})`);
+
+  if (!refresh) return;
 
   // get all songs in combined playlist
   console.log(`START FETCH ALL SONGS FROM COMBO (${uid}, ${combo.id})`);
@@ -500,6 +547,10 @@ const _RefreshCombinedPlaylist = async (context, combo) => {
     // only remove from tracksToAdd if add was successful
     tracksToAdd.splice(0, 100);
   }
+
+  // update playlists in DB with new snapshot id
+  await _updatePlaylistsInDb(combo.id, newPlaylists);
+
   console.log(`END ADDING tracks to ${combo.name} (${uid}, ${combo.id})`);
   console.log(`DONE combining for ${combo.name}`);
   console.log(`**********************************************************`);
@@ -513,7 +564,6 @@ exports.adminRefreshAllCombinedPlaylists = functions
     if (await checkUserIsAdmin(context)) {
       // fetch all combined playlists
       const combinedPlaylists = await _fetchAllCombinedPlaylistsFromDb();
-
       console.log(`BEGIN REFRESH FOR ${combinedPlaylists.length} combos`);
       return new Promise(async (resolve, reject) => {
         try {
@@ -574,7 +624,7 @@ exports.refreshNewCombinedPlaylist = functions
         try {
           await retry(
             3,
-            () => _RefreshCombinedPlaylist(context, combo),
+            () => _RefreshCombinedPlaylist(context, combo, true),
             3000,
             combo.name
           );
