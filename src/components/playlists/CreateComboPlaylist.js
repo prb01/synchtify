@@ -56,32 +56,45 @@ const CreateComboPlaylist = (props) => {
     if (Object.keys(errors).length) {
       alert("Error saving product: " + JSON.stringify(errors));
     } else {
-      const playlists = data.playlists.map((playlist) =>
-        JSON.parse(playlist.playlist)
-      );
+      try {
+        const playlists = data.playlists.map((playlist) =>
+          JSON.parse(playlist.playlist)
+        );
 
-      const { payload: combinedPlaylistId } = await dispatch(
-        createCombinedPlaylist({
+        const { id } = await cloudService.createPlaylist(
+          spotifyData.user.id,
+          userData.access_token,
+          data.name
+        );
+
+        const comboData = {
+          id,
           uid: userData.uid,
           name: data.name,
-          spotifyId: spotifyData.user.id,
-          access_token: userData.access_token,
           playlists,
-        })
-      );
+        };
 
-      const { payload: combinedPlaylists } = await dispatch(
-        fetchCombinedPlaylistsByUid({ uid: userData.uid })
-      );
+        const { payload: combinedPlaylistId } = await dispatch(
+          createCombinedPlaylist({
+            ...comboData,
+            spotifyId: spotifyData.user.id,
+            access_token: userData.access_token,
+          })
+        );
 
-      const combo = combinedPlaylists.filter(
-        (playlist) => playlist.id === combinedPlaylistId
-      );
+        const { payload: combinedPlaylists } = await dispatch(
+          fetchCombinedPlaylistsByUid({ uid: userData.uid })
+        );
 
-      await cloudService.refreshNewCombinedPlaylist(combo[0]);
+        const combo = combinedPlaylists.find(
+          (playlist) => playlist.id === combinedPlaylistId
+        );
 
-      reset();
-      console.log("added to Spotify & DB");
+        await cloudService.refreshNewCombinedPlaylist(combo);
+
+        reset();
+        console.log("added to Spotify & DB");
+      } catch (error) {}
     }
   };
 
@@ -131,6 +144,7 @@ const CreateComboPlaylist = (props) => {
                                 value={JSON.stringify({
                                   name: playlist.name,
                                   id: playlist.id,
+                                  snapshotId: playlist.snapshot_id,
                                 })}
                               >
                                 {playlist.name}
