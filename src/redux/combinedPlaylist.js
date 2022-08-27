@@ -1,5 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { cloudService } from "services/cloudService";
+import firebaseClient from "firebase/client";
+import firebase from "firebase/app";
 
 const initialState = {
   data: {},
@@ -23,7 +25,7 @@ const combinedPlaylist = createSlice({
       state.hasErrors = true;
     },
     createDataSuccess: (state, action) => {
-      state.data = { ...state, ...action.payload };
+      state.data.push(action.payload);
       state.isLoaded = true;
       state.hasErrors = false;
     },
@@ -31,9 +33,7 @@ const combinedPlaylist = createSlice({
       state.hasErrors = true;
     },
     removeData: (state, action) => {
-      state.data = state.data.filter(
-        (playlist) => playlist.id !== action.payload
-      );
+      state.data = state.data.filter((playlist) => playlist.id !== action.payload);
     },
   },
 });
@@ -68,14 +68,15 @@ export const createCombinedPlaylist = createAsyncThunk(
   "combinedPlaylist/createCombinedPlaylist",
   async (payload, thunkAPI) => {
     try {
-      const data = await _createCombinedPlaylistInDb(
+      console.log(payload);
+      await _createCombinedPlaylistInDb(
         payload.id,
         payload.uid,
         payload.name,
         payload.playlists
       );
 
-      console.log({ data });
+      thunkAPI.dispatch(createDataSuccess(payload));
 
       return payload.id;
     } catch (error) {
@@ -116,18 +117,12 @@ async function _fetchCombinedPlaylistsByUidFromDb(uid) {
 }
 
 async function _createCombinedPlaylistInDb(id, uid, name, playlists) {
-  const doc = await firebaseClient
-    .firestore()
-    .collection("combined_playlists")
-    .doc(id)
-    .set({
-      uid,
-      name,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      playlists,
-    });
-
-  return doc;
+  await firebaseClient.firestore().collection("combined_playlists").doc(id).set({
+    uid,
+    name,
+    playlists,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+  });
 }
 
 async function _deleteCombinedPlaylistFromDb(id) {
