@@ -66,7 +66,7 @@ const CreateComboPlaylist = (props) => {
           playlists,
         };
 
-        dispatch(createCombinedPlaylist({ ...comboData }));
+        await dispatch(createCombinedPlaylist({ ...comboData }));
 
         await cloudService.refreshNewCombinedPlaylist(comboData);
 
