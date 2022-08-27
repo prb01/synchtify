@@ -116,7 +116,7 @@ const Dashboard = (props) => {
           Loading...
         </Spinner>
       )}
-      {user.hasErrors && "Error Loading user data..."}
+      {user.hasErrors && "Error: Please try refreshing"}
       {user.isLoaded && !user.hasErrors && !user.data.access_token && (
         <div className="position-absolute top-50 start-50 translate-middle d-flex flex-column justify-content-center align-items-center overflow-hidden">
           <h1 className="text-text mb-3">Connect your Spotify Account to start</h1>
@@ -138,8 +138,8 @@ const Dashboard = (props) => {
             <RefreshOverlay handleRefreshToken={handleRefreshToken} />
           )}
           <div>
-            {!playlist.isLoaded &&
-              !spotifyUser.isLoaded &&
+            {!spotifyUser.isLoaded &&
+              !playlist.isLoaded &&
               !combinedPlaylist.isLoaded && (
                 <Spinner
                   color="secondary"
@@ -148,13 +148,12 @@ const Dashboard = (props) => {
                   Loading...
                 </Spinner>
               )}
-            {playlist.hasErrors && `Error Loading...`}
-            {playlist.isLoaded && <CreateComboPlaylist />}
+            {playlist.hasErrors && `Error: Please try refreshing`}
+            {combinedPlaylist.hasErrors && `Error: Please try refreshing`}
+            {playlist.isLoaded && !playlist.hasErrors && <CreateComboPlaylist />}
 
-            {combinedPlaylist.isLoaded && (
-              <ListOfComboPlaylists
-                combinedPlaylists={combinedPlaylist.data}
-              />
+            {combinedPlaylist.isLoaded && !combinedPlaylist.hasErrors && (
+              <ListOfComboPlaylists combinedPlaylists={combinedPlaylist.data} />
             )}
           </div>
         </>
