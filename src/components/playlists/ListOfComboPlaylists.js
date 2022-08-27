@@ -4,22 +4,21 @@ import ComboPlaylist from "./ComboPlaylist";
 
 const ListOfComboPlaylists = ({ combinedPlaylists }) => {
   const {
-    data: spotifyData,
-    isLoaded: spotifyIsLoaded,
-    hasErrors: spotifyHasErrors,
-    errorMsg: spotifyErrorMsg
-  } = useSelector((state) => state.spotify);
+    data: spotifyUserData,
+    isLoaded: spotifyUserIsLoaded,
+    hasErrors: spotifyUserHasErrors,
+  } = useSelector((state) => state.spotifyUser);
 
   if (!combinedPlaylists || combinedPlaylists.length === 0) return null;
 
   return (
     <>
-      {!spotifyIsLoaded && "Form loading..."}
-      {spotifyHasErrors && `Error Loading: ${spotifyErrorMsg}`}
-      {spotifyIsLoaded && (
+      {!spotifyUserIsLoaded && "Form loading..."}
+      {spotifyUserHasErrors && `Error Loading...`}
+      {spotifyUserIsLoaded && (
         <Container className="p-3 my-3 border border-secondary form-rounded text-text d-grid gap-3">
           <h2 className="text-center mb-4">
-            {spotifyData.user?.display_name}'s Combined Playlists
+            {spotifyUserData?.display_name}'s Combined Playlists
           </h2>
           {combinedPlaylists.map((combinedPlaylist) => (
             <ComboPlaylist
