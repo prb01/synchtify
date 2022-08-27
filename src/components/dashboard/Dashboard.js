@@ -10,7 +10,7 @@ import ListOfComboPlaylists from "components/playlists/ListOfComboPlaylists";
 import { getDifferenceInMins, spotifyLogin } from "utils/utils";
 import { addSpotifyAuth, updateSpotifyAuth } from "redux/user";
 import { fetchCombinedPlaylistsByUid } from "redux/spotify";
-import { fetchSpotifyPlaylists } from "redux/playlists";
+import { fetchSpotifyPlaylists } from "redux/playlist";
 import { fetchSpotifyMe } from "redux/spotifyUser";
 import RefreshOverlay from "./RefreshOverlay";
 
@@ -24,7 +24,7 @@ const Dashboard = (props) => {
   const [timeoutId, setTimeoutId] = useState();
   const [refreshRequired, setRefreshRequired] = useState(false);
   const {
-    user, spotify, spotifyUser, playlists
+    user, spotify, spotifyUser, playlist
   } = useSelector((state) => state);
 
   const handleConnectSpotify = () => {
@@ -139,7 +139,7 @@ const Dashboard = (props) => {
           )}
           <div>
             {!spotify.isLoaded &&
-              !playlists.isLoaded &&
+              !playlist.isLoaded &&
               !spotifyUser.isLoaded &&
               !spotify.data.combinedPlaylists && (
                 <Spinner
@@ -150,7 +150,7 @@ const Dashboard = (props) => {
                 </Spinner>
               )}
             {spotify.hasErrors && `Error Loading...`}
-            {playlists.isLoaded && <CreateComboPlaylist />}
+            {playlist.isLoaded && <CreateComboPlaylist />}
 
             {spotify.isLoaded && spotify.data.combinedPlaylists && (
               <ListOfComboPlaylists
