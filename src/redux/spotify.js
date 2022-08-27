@@ -65,28 +65,6 @@ export const {
   removeCombinedPlaylist,
 } = spotify.actions;
 
-export const fetchSpotifyPlaylists = createAsyncThunk(
-  "spotify/fetchSpotifyPlaylists",
-  async (payload, thunkAPI) => {
-    try {
-      thunkAPI.dispatch(appendData());
-
-      const playlists = await cloudService.getAllPlaylists(
-        payload.user,
-        payload.access_token
-      );
-
-      const sortedPlaylists = playlists.sort(
-        (a, b) => a.name.toLowerCase() > b.name.toLowerCase()
-      );
-
-      thunkAPI.dispatch(appendDataSuccess({ playlists: sortedPlaylists }));
-    } catch (error) {
-      thunkAPI.dispatch(appendDataFailure(error.message));
-    }
-  }
-);
-
 export const fetchCombinedPlaylistsByUid = createAsyncThunk(
   "spotify/fetchCombinedPlaylists",
   async (payload, thunkAPI) => {
