@@ -356,8 +356,10 @@ const retry = (maxRetries, fn, sleepTime = 1500, name = "") => {
   });
 };
 
-const _fetchAllCombinedPlaylistsFromDb = async () => {
-  const snapshot = await admin.firestore().collection("combined_playlists").get();
+const _fetchAllCombinedPlaylistsFromDb = async (
+  collection = "combined_playlists"
+) => {
+  const snapshot = await admin.firestore().collection(collection).get();
   const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
   return data;
 };
@@ -380,6 +382,19 @@ const _updatePlaylistsInDb = async (id, playlists) => {
     .update({ updatedAt: admin.firestore.FieldValue.serverTimestamp(), playlists });
 
   return doc;
+};
+
+const _createCombinedPlaylistInDb = async (collection, id, uid, name, playlists) => {
+  try {
+    await admin.firestore().collection(collection).doc(id).set({
+      uid,
+      name,
+      playlists,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const _RefreshCombinedPlaylist = async (context, combo, firstRun = null) => {
@@ -456,7 +471,7 @@ const _RefreshCombinedPlaylist = async (context, combo, firstRun = null) => {
 
     if (!refresh) return;
   }
-  
+
   console.log(`END CHECK PLAYLIST CHANGES (${uid}, ${combo.id}, ${refresh})`);
 
   // get all songs in combined playlist
@@ -549,7 +564,7 @@ const _RefreshCombinedPlaylist = async (context, combo, firstRun = null) => {
   }
 
   // update playlists in DB with new snapshot id
-  await _updatePlaylistsInDb(combo.id, newPlaylists);
+  if (refresh) await _updatePlaylistsInDb(combo.id, newPlaylists);
 
   console.log(`END ADDING tracks to ${combo.name} (${uid}, ${combo.id})`);
   console.log(`DONE combining for ${combo.name}`);
@@ -636,6 +651,35 @@ exports.refreshNewCombinedPlaylist = functions
       });
     }
   });
+
+exports.backupCombinedPlaylists = functions.https.onCall(async (data, context) => {
+  if (await checkUserIsAdmin(context)) {
+    const fetchCollection = "combined_playlists";
+    const backupCollection = "combined_playlists_backup";
+    return new Promise(async (resolve, reject) => {
+      try {
+        const combinedPlaylists = await _fetchAllCombinedPlaylistsFromDb(
+          fetchCollection
+        );
+
+        for (const combo of combinedPlaylists) {
+          await _createCombinedPlaylistInDb(
+            backupCollection,
+            combo.id,
+            combo.uid,
+            combo.name,
+            combo.playlists
+          );
+        }
+
+        return resolve("Combined playlists backed up");
+      } catch (error) {
+        return reject(error.message);
+      }
+    });
+  }
+  return null;
+});
 
 //END   -- UTILS --
 //----------------------------------------------------------------------
