@@ -453,11 +453,11 @@ const _RefreshCombinedPlaylist = async (context, combo, firstRun = null) => {
         snapshotId: spotifyPlaylist.snapshot_id,
       });
     }
+
+    if (!refresh) return;
   }
-
+  
   console.log(`END CHECK PLAYLIST CHANGES (${uid}, ${combo.id}, ${refresh})`);
-
-  if (!refresh) return;
 
   // get all songs in combined playlist
   console.log(`START FETCH ALL SONGS FROM COMBO (${uid}, ${combo.id})`);
