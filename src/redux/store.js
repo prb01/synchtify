@@ -4,13 +4,13 @@ import { combineReducers } from 'redux'
 import { reducer as user } from './user';
 import { reducer as spotify } from "./spotify"
 import { reducer as spotifyUser} from "./spotifyUser"
-import { reducer as playlists } from "./playlists"
+import { reducer as playlist } from "./playlist"
 
 const reducer = combineReducers({
     user,
     spotify,
     spotifyUser,
-    playlists
+    playlist
 });
 
 const store = configureStore({
