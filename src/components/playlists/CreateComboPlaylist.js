@@ -3,7 +3,10 @@ import { faPlusCircle, faMinusCircle } from "@fortawesome/free-solid-svg-icons";
 import { Controller, useForm, useFieldArray } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
 import { Button, Col, Row, Form, FormGroup, Input, Label } from "reactstrap";
-import { createCombinedPlaylist, fetchCombinedPlaylistsByUid } from "redux/spotify";
+import {
+  createCombinedPlaylist,
+  fetchCombinedPlaylistsByUid,
+} from "redux/combinedPlaylist";
 import { cloudService } from "services/cloudService";
 import { useEffect } from "react";
 
@@ -63,23 +66,9 @@ const CreateComboPlaylist = (props) => {
           playlists,
         };
 
-        const { payload: combinedPlaylistId } = await dispatch(
-          createCombinedPlaylist({
-            ...comboData,
-            spotifyId: spotifyUser.data.id,
-            access_token: user.data.access_token,
-          })
-        );
+        dispatch(createCombinedPlaylist({ ...comboData }));
 
-        const { payload: combinedPlaylists } = await dispatch(
-          fetchCombinedPlaylistsByUid({ uid: user.data.uid })
-        );
-
-        const combo = combinedPlaylists.find(
-          (playlist) => playlist.id === combinedPlaylistId
-        );
-
-        await cloudService.refreshNewCombinedPlaylist(combo);
+        await cloudService.refreshNewCombinedPlaylist(comboData);
 
         reset();
         console.log("added to Spotify & DB");
