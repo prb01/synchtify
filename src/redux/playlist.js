@@ -7,8 +7,8 @@ const initialState = {
   hasErrors: false,
 };
 
-const playlists = createSlice({
-  name: "playlists",
+const playlist = createSlice({
+  name: "playlist",
   initialState,
   reducers: {
     getData: (state) => {},
@@ -25,12 +25,12 @@ const playlists = createSlice({
   },
 });
 
-export const reducer = playlists.reducer;
+export const reducer = playlist.reducer;
 
-export const { getData, getDataSuccess, getDataFailure } = playlists.actions;
+export const { getData, getDataSuccess, getDataFailure } = playlist.actions;
 
 export const fetchSpotifyPlaylists = createAsyncThunk(
-  "playlists/fetchSpotifyPlaylists",
+  "playlist/fetchSpotifyPlaylists",
   async (payload, thunkAPI) => {
     try {
       thunkAPI.dispatch(getData());
