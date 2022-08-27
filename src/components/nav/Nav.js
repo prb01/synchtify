@@ -49,6 +49,11 @@ const Nav = () => {
     await cloudService.adminRefreshAllCombinedPlaylists();
   };
 
+  // admin function to back up combined playlists
+  const handleBackupCombinedPlaylists = async () => {
+    await cloudService.backupCombinedPlaylists();
+  };
+
   // (re)Connect to Spotify (auth)
   const handleConnectSpotify = () => {
     spotifyLogin();
@@ -72,15 +77,28 @@ const Nav = () => {
         <Collapse isOpen={!collapsed} navbar>
           <StrapNav pills navbar className="pt-4 pb-4 px-3 ms-auto gap-3">
             {userData.admin && (
-              <NavItem className="">
-                <Button
-                  color="secondary"
-                  className="btn-rounded container-sm py-4 py-sm-2"
-                  onClick={handleRefreshCombinedPlaylists}
-                >
-                  Refresh All Playlists
-                </Button>
-              </NavItem>
+              <>
+                <NavItem className="">
+                  <Button
+                    color="accent"
+                    outline
+                    className="btn-rounded container-sm py-4 py-sm-2"
+                    onClick={handleRefreshCombinedPlaylists}
+                  >
+                    Refresh All
+                  </Button>
+                </NavItem>
+                <NavItem className="">
+                  <Button
+                    color="accent"
+                    outline
+                    className="btn-rounded container-sm py-4 py-sm-2"
+                    onClick={handleBackupCombinedPlaylists}
+                  >
+                    Back up
+                  </Button>
+                </NavItem>
+              </>
             )}
             <NavItem className="">
               <Button
