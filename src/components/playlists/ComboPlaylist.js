@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Playlist from "./Playlist";
 import { useDispatch, useSelector } from "react-redux";
-import { deleteCombinedPlaylist } from "redux/spotify";
+import { deleteCombinedPlaylist } from "redux/combinedPlaylist";
 import {
   Accordion,
   AccordionBody,
