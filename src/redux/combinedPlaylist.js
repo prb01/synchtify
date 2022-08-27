@@ -68,7 +68,6 @@ export const createCombinedPlaylist = createAsyncThunk(
   "combinedPlaylist/createCombinedPlaylist",
   async (payload, thunkAPI) => {
     try {
-      console.log(payload);
       await _createCombinedPlaylistInDb(
         payload.id,
         payload.uid,
