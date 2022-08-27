@@ -31,7 +31,7 @@ export const {
   getData,
   getDataSuccess,
   getDataFailure,
-} = spotify.actions;
+} = spotifyUser.actions;
 
 export const fetchSpotifyMe = createAsyncThunk(
   "spotifyUser/fetchSpotifyMe",
