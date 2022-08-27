@@ -7,16 +7,10 @@ import { faSpotify } from "@fortawesome/free-brands-svg-icons";
 import Nav from "components/nav/Nav";
 import CreateComboPlaylist from "components/playlists/CreateComboPlaylist";
 import ListOfComboPlaylists from "components/playlists/ListOfComboPlaylists";
-import {
-  getDifferenceInMins,
-  spotifyLogin,
-} from "utils/utils";
+import { getDifferenceInMins, spotifyLogin } from "utils/utils";
 import { addSpotifyAuth, updateSpotifyAuth } from "redux/user";
-import {
-  fetchSpotifyMe,
-  fetchSpotifyPlaylists,
-  fetchCombinedPlaylistsByUid,
-} from "redux/spotify";
+import { fetchSpotifyPlaylists, fetchCombinedPlaylistsByUid } from "redux/spotify";
+import { fetchSpotifyMe } from "redux/spotifyUser";
 import RefreshOverlay from "./RefreshOverlay";
 
 const Dashboard = (props) => {
@@ -40,6 +34,11 @@ const Dashboard = (props) => {
     hasErrors: spotifyHasErrors,
     errorMsg: spotifyErrorMsg,
   } = useSelector((state) => state.spotify);
+  const {
+    data: spotifyUserData,
+    isLoaded: spotifyUserIsLoaded,
+    hasErrors: spotifyUserHasErrors,
+  } = useSelector((state) => state.spotifyUser);
 
   const handleConnectSpotify = () => {
     spotifyLogin();
@@ -57,7 +56,10 @@ const Dashboard = (props) => {
     }
 
     // Access token needs to be refreshed every 60mins, so check last time it was updated
-    const lastUpdateInMins = getDifferenceInMins(new Date(userData.updatedAt), new Date());
+    const lastUpdateInMins = getDifferenceInMins(
+      new Date(userData.updatedAt),
+      new Date()
+    );
 
     // If updated over 60mins ago, then trigger a token refresh
     if (userData.access_token && lastUpdateInMins > 60) {
@@ -91,17 +93,19 @@ const Dashboard = (props) => {
     // This should be triggered if access token exists & has been alive for less than 60mins
     // If true, then get Spotify details for user & fetch their Spotify playlists
     if (userData.access_token) {
-      dispatch(fetchSpotifyMe({ access_token: userData.access_token })).then((data) => {
-        dispatch(
-          fetchSpotifyPlaylists({
-            user: data.payload,
-            access_token: userData.access_token,
-          })
-        );
+      dispatch(fetchSpotifyMe({ access_token: userData.access_token })).then(
+        (data) => {
+          dispatch(
+            fetchSpotifyPlaylists({
+              user: data.payload,
+              access_token: userData.access_token,
+            })
+          );
 
-        // fetch their combined Playlists as well from DB
-        dispatch(fetchCombinedPlaylistsByUid({ uid: userData.uid }));
-      });
+          // fetch their combined Playlists as well from DB
+          dispatch(fetchCombinedPlaylistsByUid({ uid: userData.uid }));
+        }
+      );
     }
   }, [userIsLoaded, userData]);
 
@@ -143,11 +147,18 @@ const Dashboard = (props) => {
       )}
       {userIsLoaded && !userHasErrors && userData.access_token && (
         <>
-          {refreshRequired && <RefreshOverlay handleRefreshToken={handleRefreshToken} />}
+          {refreshRequired && (
+            <RefreshOverlay handleRefreshToken={handleRefreshToken} />
+          )}
           <div>
             {!spotifyIsLoaded &&
-              !spotifyData.playlists && !spotifyData.user && !spotifyData.combinedPlaylists && (
-                <Spinner color="secondary" className="position-absolute top-50 start-50">
+              !spotifyData.playlists &&
+              !spotifyUserData &&
+              !spotifyData.combinedPlaylists && (
+                <Spinner
+                  color="secondary"
+                  className="position-absolute top-50 start-50"
+                >
                   Loading...
                 </Spinner>
               )}
@@ -155,7 +166,9 @@ const Dashboard = (props) => {
             {spotifyIsLoaded && spotifyData.playlists && <CreateComboPlaylist />}
 
             {spotifyIsLoaded && spotifyData.combinedPlaylists && (
-              <ListOfComboPlaylists combinedPlaylists={spotifyData.combinedPlaylists} />
+              <ListOfComboPlaylists
+                combinedPlaylists={spotifyData.combinedPlaylists}
+              />
             )}
           </div>
         </>
