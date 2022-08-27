@@ -65,23 +65,6 @@ export const {
   removeCombinedPlaylist,
 } = spotify.actions;
 
-export const fetchSpotifyMe = createAsyncThunk(
-  "spotify/fetchSpotifyMe",
-  async (payload, thunkAPI) => {
-    try {
-      thunkAPI.dispatch(appendData());
-
-      const data = await cloudService.getMe(payload.access_token);
-
-      thunkAPI.dispatch(appendDataSuccess({ user: data }));
-
-      return data.id;
-    } catch (error) {
-      thunkAPI.dispatch(appendDataFailure(error.message));
-    }
-  }
-);
-
 export const fetchSpotifyPlaylists = createAsyncThunk(
   "spotify/fetchSpotifyPlaylists",
   async (payload, thunkAPI) => {
