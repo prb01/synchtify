@@ -9,18 +9,7 @@ import { useEffect } from "react";
 
 const CreateComboPlaylist = (props) => {
   const dispatch = useDispatch();
-  const {
-    data: userData,
-    isLoaded: userIsLoaded,
-    hasErrors: userHasErrors,
-    errorMsg: userErrorMsg,
-  } = useSelector((state) => state.user);
-  const {
-    data: spotifyData,
-    isLoaded: spotifyIsLoaded,
-    hasErrors: spotifyHasErrors,
-    errorMsg: spotifyErrorMsg,
-  } = useSelector((state) => state.spotify);
+  const { user, spotifyUser, playlist } = useSelector((state) => state);
 
   const {
     register,
@@ -62,14 +51,14 @@ const CreateComboPlaylist = (props) => {
         );
 
         const { id } = await cloudService.createPlaylist(
-          spotifyData.user.id,
-          userData.access_token,
+          spotifyUser.data.id,
+          user.data.access_token,
           data.name
         );
 
         const comboData = {
           id,
-          uid: userData.uid,
+          uid: user.data.uid,
           name: data.name,
           playlists,
         };
@@ -77,13 +66,13 @@ const CreateComboPlaylist = (props) => {
         const { payload: combinedPlaylistId } = await dispatch(
           createCombinedPlaylist({
             ...comboData,
-            spotifyId: spotifyData.user.id,
-            access_token: userData.access_token,
+            spotifyId: spotifyUser.data.id,
+            access_token: user.data.access_token,
           })
         );
 
         const { payload: combinedPlaylists } = await dispatch(
-          fetchCombinedPlaylistsByUid({ uid: userData.uid })
+          fetchCombinedPlaylistsByUid({ uid: user.data.uid })
         );
 
         const combo = combinedPlaylists.find(
@@ -100,98 +89,94 @@ const CreateComboPlaylist = (props) => {
 
   return (
     <>
-      {!spotifyIsLoaded && "Form loading..."}
-      {spotifyHasErrors && `Error Loading: ${spotifyErrorMsg}`}
-      {spotifyIsLoaded && (
-        <Form
-          onSubmit={handleSubmit(onSubmit)}
-          className="p-3 my-3 border border-secondary form-rounded text-text"
-        >
-          <h2 className="text-center mb-4">Create new combined playlist</h2>
-          <FormGroup row>
-            <Label for="name" sm={2}>
-              Name<span className="text-danger">*</span>
-            </Label>
-            <Col sm={8}>
-              <Input
-                id="name"
-                type="text"
-                placeholder="Combined playlist Name"
-                {...nameRest}
-                innerRef={nameRef}
-                invalid={errors.name ? true : false}
-              />
-            </Col>
-          </FormGroup>
-          <ul style={{ listStyleType: "none", padding: 0 }}>
-            {fields.map((item, idx) => (
-              <li key={item.id}>
-                <FormGroup row>
-                  <Label for="playlist" sm={2}>
-                    Playlist<span className="text-danger">*</span>
-                  </Label>
-                  <Col xs={10} sm={8}>
-                    <Controller
-                      name={`playlists.${idx}.playlist`}
-                      control={control}
-                      render={({ field }) => (
-                        <Input id="playlist" type="select" {...field}>
-                          <option value="" hidden></option>
-                          {spotifyData.playlists &&
-                            spotifyData.playlists.map((playlist) => (
-                              <option
-                                key={playlist.id}
-                                value={JSON.stringify({
-                                  name: playlist.name,
-                                  id: playlist.id,
-                                  snapshotId: playlist.snapshot_id,
-                                })}
-                              >
-                                {playlist.name}
-                              </option>
-                            ))}
-                        </Input>
-                      )}
-                    />
-                  </Col>
-                  <Col
-                    xs={2}
-                    sm={2}
-                    className="d-flex align-items-center justify-content-start"
+      <Form
+        onSubmit={handleSubmit(onSubmit)}
+        className="p-3 my-3 border border-secondary form-rounded text-text"
+      >
+        <h2 className="text-center mb-4">Create new combined playlist</h2>
+        <FormGroup row>
+          <Label for="name" sm={2}>
+            Name<span className="text-danger">*</span>
+          </Label>
+          <Col sm={8}>
+            <Input
+              id="name"
+              type="text"
+              placeholder="Combined playlist Name"
+              {...nameRest}
+              innerRef={nameRef}
+              invalid={errors.name ? true : false}
+            />
+          </Col>
+        </FormGroup>
+        <ul style={{ listStyleType: "none", padding: 0 }}>
+          {fields.map((item, idx) => (
+            <li key={item.id}>
+              <FormGroup row>
+                <Label for="playlist" sm={2}>
+                  Playlist<span className="text-danger">*</span>
+                </Label>
+                <Col xs={10} sm={8}>
+                  <Controller
+                    name={`playlists.${idx}.playlist`}
+                    control={control}
+                    render={({ field }) => (
+                      <Input id="playlist" type="select" {...field}>
+                        <option value="" hidden></option>
+                        {playlist.isLoaded &&
+                          playlist.data.map((playlist) => (
+                            <option
+                              key={playlist.id}
+                              value={JSON.stringify({
+                                name: playlist.name,
+                                id: playlist.id,
+                                snapshotId: playlist.snapshot_id,
+                              })}
+                            >
+                              {playlist.name}
+                            </option>
+                          ))}
+                      </Input>
+                    )}
+                  />
+                </Col>
+                <Col
+                  xs={2}
+                  sm={2}
+                  className="d-flex align-items-center justify-content-start"
+                >
+                  <Button
+                    outline
+                    color="accent"
+                    onClick={() => remove(idx)}
+                    className="rounded-circle fs-6"
                   >
-                    <Button
-                      outline
-                      color="accent"
-                      onClick={() => remove(idx)}
-                      className="rounded-circle fs-6"
-                    >
-                      <FontAwesomeIcon icon={faMinusCircle} />
-                    </Button>
-                  </Col>
-                </FormGroup>
-              </li>
-            ))}
-          </ul>
-          <Row>
-            <Col xs={10}></Col>
-            <Col xs={2} className="d-flex align-items-center justify-content-start">
-              <Button
-                outline
-                onClick={() => append("")}
-                className="rounded-circle fs-6"
-              >
-                <FontAwesomeIcon icon={faPlusCircle} />
-              </Button>
-            </Col>
-          </Row>
-
-          <div className="d-flex justify-content-center">
-            <Button type="submit" color="secondary" className="text-primary">
-              Save New Playlist
+                    <FontAwesomeIcon icon={faMinusCircle} />
+                  </Button>
+                </Col>
+              </FormGroup>
+            </li>
+          ))}
+        </ul>
+        <Row>
+          <Col xs={10}></Col>
+          <Col xs={2} className="d-flex align-items-center justify-content-start">
+            <Button
+              outline
+              onClick={() => append("")}
+              className="rounded-circle fs-6"
+            >
+              <FontAwesomeIcon icon={faPlusCircle} />
             </Button>
-          </div>
-        </Form>
-      )}
+          </Col>
+        </Row>
+
+        <div className="d-flex justify-content-center">
+          <Button type="submit" color="secondary" className="text-primary">
+            Save New Playlist
+          </Button>
+        </div>
+      </Form>
     </>
   );
 };
