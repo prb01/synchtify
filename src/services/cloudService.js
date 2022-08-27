@@ -74,6 +74,10 @@ async function refreshNewCombinedPlaylist(combo) {
   return cloudAPICall("refreshNewCombinedPlaylist", { combo });
 }
 
+async function backupCombinedPlaylists() {
+  return cloudAPICall("backupCombinedPlaylists");
+}
+
 export const cloudService = {
   getAccessToken,
   getRefreshedAccessToken,
@@ -87,4 +91,5 @@ export const cloudService = {
   addSongsToPlaylist,
   adminRefreshAllCombinedPlaylists,
   refreshNewCombinedPlaylist,
+  backupCombinedPlaylists,
 };
