@@ -46,6 +46,7 @@ const user = createSlice({
       state.hasErrors = true;
       state.errorMsg = action.payload;
     },
+    logout: (state) => {},
   },
 });
 
@@ -59,31 +60,35 @@ export const {
   appendData,
   appendDataSuccess,
   appendDataFailure,
+  logout,
 } = user.actions;
 
-export const fetchUser = createAsyncThunk("user/fetchUser", async (payload, thunkAPI) => {
-  thunkAPI.dispatch(appendData());
+export const fetchUser = createAsyncThunk(
+  "user/fetchUser",
+  async (payload, thunkAPI) => {
+    thunkAPI.dispatch(appendData());
 
-  try {
-    const data = await _fetchUserFromDb(payload.uid);
+    try {
+      const data = await _fetchUserFromDb(payload.uid);
 
-    if (!data) {
-      thunkAPI.dispatch(createUserData(payload));
-    } else {
-      thunkAPI.dispatch(
-        appendDataSuccess({
-          ...payload,
-          ...data,
-          createdAt: data.createdAt?.toDate().toISOString(),
-          updatedAt: data.updatedAt?.toDate().toISOString(),
-        })
-      );
+      if (!data) {
+        thunkAPI.dispatch(createUserData(payload));
+      } else {
+        thunkAPI.dispatch(
+          appendDataSuccess({
+            ...payload,
+            ...data,
+            createdAt: data.createdAt?.toDate().toISOString(),
+            updatedAt: data.updatedAt?.toDate().toISOString(),
+          })
+        );
+      }
+    } catch (error) {
+      console.log(error);
+      thunkAPI.dispatch(appendDataFailure(error.message));
     }
-  } catch (error) {
-    console.log(error);
-    thunkAPI.dispatch(appendDataFailure(error.message));
   }
-});
+);
 
 export const createUserData = createAsyncThunk(
   "user/createUserData",
@@ -101,7 +106,11 @@ export const updateUserData = createAsyncThunk(
   "user/updateUserData",
   async (payload, thunkAPI) => {
     try {
-      await _updateUserData(payload.uid, payload.access_token, payload.refresh_token);
+      await _updateUserData(
+        payload.uid,
+        payload.access_token,
+        payload.refresh_token
+      );
       thunkAPI.dispatch(fetchUser(payload));
     } catch (error) {
       thunkAPI.dispatch(createDataFailure(error.message));
@@ -179,7 +188,9 @@ async function _createUserData(uid) {
 }
 
 async function _updateUserData(uid, access_token, refresh_token) {
-  const updateFields = refresh_token ? { access_token, refresh_token } : { access_token };
+  const updateFields = refresh_token
+    ? { access_token, refresh_token }
+    : { access_token };
   const doc = await firebaseClient
     .firestore()
     .collection("users")
