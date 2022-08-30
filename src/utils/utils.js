@@ -21,7 +21,7 @@ export const spotifyLogin = () => {
     ].join(" ");
 
     window.location.replace(
-      `${baseURI}/authorize?response_type=code&client_id=${clientId}&scope=${scope}&redirect_uri=${redirectURI}&state=${spotifyState}`
+      `${baseURI}/authorize?response_type=code&client_id=${clientId}&scope=${scope}&redirect_uri=${redirectURI}&state=${spotifyState}&show_dialog=true`
     );
   } catch (error) {
     console.log(error);
