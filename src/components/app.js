@@ -6,12 +6,10 @@ import Login from "components/user/Login";
 import Logout from "components/user/Logout";
 import { firebase } from "firebase/client";
 import { createBrowserHistory } from "history";
-import { useEffect } from "react";
-import { Provider, useDispatch, useSelector } from "react-redux";
+import { Provider, useDispatch } from "react-redux";
 import { Route, BrowserRouter as Router, Routes, Navigate } from "react-router-dom";
 import store from "redux/store";
-import { appendData, fetchUser } from "redux/user";
-import ErrorBoundary from "components/error-boundary";
+import { fetchUser } from "redux/user";
 import Dashboard from "./dashboard/Dashboard";
 
 export const history = createBrowserHistory();
@@ -55,7 +53,6 @@ function App() {
   };
 
   return (
-    <ErrorBoundary>
       <AuthProvider onLogin={storeUserData}>
         <Router>
           <Routes>
@@ -73,7 +70,6 @@ function App() {
           </Routes>
         </Router>
       </AuthProvider>
-    </ErrorBoundary>
   );
 }
 
