@@ -13,8 +13,15 @@ const reducer = combineReducers({
   combinedPlaylist,
 });
 
+const rootReducer = (state, action) => {
+  if (action.type === "user/logout") {
+    state = undefined;
+  }
+  return reducer(state, action)
+};
+
 const store = configureStore({
-  reducer,
+  reducer: rootReducer,
   devTools: true,
 });
 
