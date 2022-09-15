@@ -41,8 +41,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "export": "yarn build && next export",
     "start": "next start",
-    "deploy": "yarn build && firebase deploy"
+    "deploy": "yarn export && firebase deploy"
   },
   "browserslist": [
     ">0.2%",
