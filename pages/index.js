@@ -1,5 +1,11 @@
 import Link from "next/link";
 
+export async function getStaticProps(context) {
+  return {
+    props: {},
+  };
+}
+
 const Home = () => {
   return (
     <div className="vh-100 vw-100 d-flex justify-content-center align-items-center homepage-bg p-2 overflow-hidden">
