@@ -6,8 +6,8 @@ import { Button, Col, Row, Form, FormGroup, Input, Label } from "reactstrap";
 import {
   createCombinedPlaylist,
   fetchCombinedPlaylistsByUid,
-} from "redux/combinedPlaylist";
-import { cloudService } from "services/cloudService";
+} from "../../redux/combinedPlaylist";
+import { cloudService } from "../../services/cloudService";
 import { useEffect } from "react";
 
 const CreateComboPlaylist = (props) => {

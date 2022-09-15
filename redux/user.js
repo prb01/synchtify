@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import firebaseClient from "firebase/client";
+import firebaseClient from "../lib/firebase";
 import firebase from "firebase/app";
-import { cloudService } from "services/cloudService";
+import { cloudService } from "../services/cloudService";
 
 const initialState = {
   data: {},

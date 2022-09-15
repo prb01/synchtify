@@ -5,7 +5,7 @@
 
 Have you ever wanted to be able to add songs to customize a public playlist in Spotify? Of course you can just clone a public playlist, but what happens if they update it? Are you going to check those playlists every day just to make sure your playlists are in synch? Well, fret no more because the solution is here: Synchtify - your friendly Spotify Playlist Combiner with automatic synch.
 
-[Live link to Synchtify](https://synchtify.prb01.com)
+[Live link to Synchtify](https://synchtify.com)
 
 ## Final Deliverable (v1)
 

@@ -1,10 +1,12 @@
-import { useAuth } from "./Auth";
 import { Form, FormGroup, Row, Col, Input, Label, Button } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFacebook, faGoogle } from "@fortawesome/free-brands-svg-icons";
 import { useEffect, useState } from "react";
-import { StyledFirebaseAuth } from "react-firebaseui";
-import { useNavigate, useLocation } from "react-router-dom";
+import StyledFirebaseAuth from "react-firebaseui/StyledFirebaseAuth";
+import { useRouter } from "next/router";
+import Script from "next/script";
+import { useAuth } from "../context/Auth";
+import firebase from "../lib/firebase"
 
 const componentLoginFroms = {
   login: LoginForm,
@@ -14,7 +16,7 @@ const componentLoginFroms = {
 export default function Login(props) {
   const { user } = useAuth();
   const [form, setForm] = useState("login");
-  const navigate = useNavigate();
+  const router = useRouter();
   const Component = componentLoginFroms[form];
 
   // if user exists, redirect to home
@@ -22,11 +24,11 @@ export default function Login(props) {
     if (user) {
       const returnTo = "/dashboard";
 
-      navigate(returnTo);
+      router.push(returnTo);
     }
-  }, [user, props.history]);
+  }, [user]);
 
-  const retVal = (
+  return (
     <div className="vh-100 vw-100 d-flex justify-contents-center align-items-center">
       <div className="container-lg container-fluid">
         <div className="row">
@@ -35,7 +37,8 @@ export default function Login(props) {
             <p>
               Quickly get started by signing in using your existing accounts.{" "}
               <i className="blockquote-footer">
-                (Note this does not need to be the same email as your Spotify account.)
+                (Note this does not need to be the same email as your Spotify
+                account.)
               </i>
             </p>
           </div>
@@ -46,12 +49,10 @@ export default function Login(props) {
       </div>
     </div>
   );
-
-  return retVal;
 }
 
 function LoginForm(props) {
-  const { firebase, setForm } = props;
+  const { setForm } = props;
 
   // right now, the oauth form shows a firebae domain.
   // do not worory, others use magic link as well https://stackoverflow.com/questions/47532134/changing-the-domain-shown-by-google-account-chooser
@@ -67,7 +68,6 @@ function LoginForm(props) {
         var token = credential.accessToken;
         // The signed-in user info.
         var user = result.user;
-        // ...
       })
       .catch((error) => {
         // Handle Errors here.
@@ -100,19 +100,6 @@ function LoginForm(props) {
     setForm("email");
   };
 
-  const terms = (
-    <a href="#" target="_blank">
-      Terms of Service
-    </a>
-  );
-
-  function iubendaLoader(w, d) {
-    var s = d.createElement("script"),
-      tag = d.getElementsByTagName("script")[0];
-    s.src = "https://cdn.iubenda.com/iubenda.js";
-    tag.parentNode.insertBefore(s, tag);
-  }
-
   const privacy = (
     <a
       href="https://www.iubenda.com/privacy-policy/68367909"
@@ -124,16 +111,17 @@ function LoginForm(props) {
   );
 
   const TermsPrivacy = () => {
-    iubendaLoader(window, document);
-
     return (
-      <p className="small text-center text-muted font-weight-light">
-        By proceeding, you are agreeing to the {privacy}.
-      </p>
+      <>
+        <Script src="https://cdn.iubenda.com/iubenda.js" />
+        <p className="small text-center text-muted font-weight-light">
+          By proceeding, you are agreeing to the {privacy}.
+        </p>
+      </>
     );
   };
 
-  const retVal = (
+  return (
     <Form>
       <FormGroup>
         <TermsPrivacy />
@@ -176,8 +164,6 @@ function LoginForm(props) {
       </FormGroup>
     </Form>
   );
-
-  return retVal;
 }
 
 function EmailLogin(props) {

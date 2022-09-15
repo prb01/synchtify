@@ -1,44 +1,51 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useRouter } from "next/router";
 import { Button, Spinner } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpotify } from "@fortawesome/free-brands-svg-icons";
-import Nav from "components/nav/Nav";
-import CreateComboPlaylist from "components/playlists/CreateComboPlaylist";
-import ListOfComboPlaylists from "components/playlists/ListOfComboPlaylists";
-import { getDifferenceInMins, spotifyLogin } from "utils/utils";
-import { addSpotifyAuth, updateSpotifyAuth } from "redux/user";
-import { fetchCombinedPlaylistsByUid } from "redux/combinedPlaylist";
-import { fetchSpotifyPlaylists } from "redux/playlist";
-import { fetchSpotifyMe } from "redux/spotifyUser";
-import RefreshOverlay from "./RefreshOverlay";
+import { useAuth } from "../context/Auth";
+import Nav from "../components/nav/Nav";
+import CreateComboPlaylist from "../components/playlists/CreateComboPlaylist";
+import ListOfComboPlaylists from "../components/playlists/ListOfComboPlaylists";
+import RefreshOverlay from "../components/dashboard/RefreshOverlay";
+import { getDifferenceInMins, spotifyLogin, getRedirectURI } from "../lib/utils";
+import { addSpotifyAuth, updateSpotifyAuth } from "../redux/user";
+import { fetchCombinedPlaylistsByUid } from "../redux/combinedPlaylist";
+import { fetchSpotifyPlaylists } from "../redux/playlist";
+import { fetchSpotifyMe } from "../redux/spotifyUser";
 
 const Dashboard = (props) => {
+  const { isLoading, isAuthenticated } = useAuth();
   const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const redirectURI = `${window.location.origin}/dashboard`;
-  const [searchParams] = useSearchParams();
-  const code = searchParams.get("code");
-  const state = searchParams.get("state");
+  const router = useRouter();
+  const redirectURI = getRedirectURI();
   const [timeoutId, setTimeoutId] = useState();
   const [refreshRequired, setRefreshRequired] = useState(false);
-  const {
-    user, spotifyUser, playlist, combinedPlaylist
-  } = useSelector((state) => state);
+  const { user, spotifyUser, playlist, combinedPlaylist } = useSelector(
+    (state) => state
+  );
 
   const handleConnectSpotify = () => {
     spotifyLogin();
   };
 
   useEffect(() => {
+    // if not authenticated, navigate to login
+    if (!isLoading && !isAuthenticated) return router.push("/login");
+
+    // if router not ready, return
+    if (!router.isReady) return;
+    const code = router.query.code;
+    const state = router.query.state;
+
     // if no userData, then return
     if (!user.isLoaded) return;
 
     // trigger if spotify has been authorized (code & state comes from Spotify)
     if (code && state) {
       dispatch(addSpotifyAuth({ uid: user.data.uid, code, state, redirectURI }));
-      navigate("/dashboard");
+      router.push("/dashboard");
       return;
     }
 
@@ -58,7 +65,7 @@ const Dashboard = (props) => {
         })
       );
       setRefreshRequired(false);
-      navigate("/dashboard");
+      router.push("/dashboard");
       return;
     }
 
@@ -94,7 +101,7 @@ const Dashboard = (props) => {
         }
       );
     }
-  }, [user.isLoaded, user.data]);
+  }, [isLoading, isAuthenticated, router.isReady, user.isLoaded, user.data]);
 
   const handleRefreshToken = () => {
     dispatch(
@@ -105,7 +112,7 @@ const Dashboard = (props) => {
       })
     );
     setRefreshRequired(false);
-    navigate("/dashboard");
+    router.push("/dashboard");
   };
 
   return (

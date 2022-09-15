@@ -1,4 +1,6 @@
-const Home = (props) => {
+import Link from "next/link";
+
+const Home = () => {
   return (
     <div className="vh-100 vw-100 d-flex justify-content-center align-items-center homepage-bg p-2 overflow-hidden">
       <div className="d-flex flex-column text-center justify-content-center">
@@ -19,27 +21,29 @@ const Home = (props) => {
         </div>
         <div className="mt-4">
           <div className="mb-2">
-            <a
-              href="/dashboard"
-              role="button"
-              className="opacity-0 btn-lg btn-accent text-primary text-decoration-none blur-in font-weight-bold p-2 px-5"
-            >
-              Sign Up
-            </a>
+            <Link href="/login">
+              <a
+                role="button"
+                className="opacity-0 btn-lg btn-accent text-primary text-decoration-none blur-in font-weight-bold p-2 px-5"
+              >
+                Sign Up
+              </a>
+            </Link>
           </div>
           <div className="d-sm-none mt-4">
-            <a
-              href="/dashboard"
-              role="button"
-              className="opacity-0 btn-lg btn-text text-primary text-decoration-none blur-in font-weight-bold p-2 px-5"
-            >
-              Login
-            </a>
+            <Link href="/login">
+              <a
+                role="button"
+                className="opacity-0 btn-lg btn-text text-primary text-decoration-none blur-in font-weight-bold p-2 px-5"
+              >
+                Login
+              </a>
+            </Link>
           </div>
 
           <p className="text-text d-none d-sm-block opacity-0 blur-in">
             or{" "}
-            <a href="/dashboard" className="text-text">
+            <a href="/login" className="text-text">
               <u>login</u>
             </a>
           </p>
@@ -47,6 +51,6 @@ const Home = (props) => {
       </div>
     </div>
   );
-}
+};
 
-export default Home
+export default Home;

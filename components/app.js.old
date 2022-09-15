@@ -1,10 +1,10 @@
 import "../custom.scss";
-import Home from "components/Home";
+import Home from "pages";
 import "../assets/styles/styles.css";
-import { AuthProvider, useAuth } from "components/user/Auth";
-import Login from "components/user/Login";
+import { AuthProvider, useAuth } from "context/Auth";
+import Login from "pages/login";
 import Logout from "components/user/Logout";
-import { firebase } from "firebase/client";
+import { firebase } from "firebase/firebase";
 import { createBrowserHistory } from "history";
 import { Provider, useDispatch } from "react-redux";
 import { Route, BrowserRouter as Router, Routes, Navigate } from "react-router-dom";
