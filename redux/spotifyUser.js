@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { cloudService } from "services/cloudService";
+import { cloudService } from "../services/cloudService";
 
 const initialState = {
   data: {},

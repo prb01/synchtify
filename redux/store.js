@@ -1,6 +1,6 @@
-// https://dev.to/thatgalnatalie/how-to-get-started-with-redux-toolkit-41e
 import { configureStore } from "@reduxjs/toolkit";
 import { combineReducers } from "redux";
+import { createWrapper } from "next-redux-wrapper";
 import { reducer as user } from "./user";
 import { reducer as spotifyUser } from "./spotifyUser";
 import { reducer as playlist } from "./playlist";
@@ -20,9 +20,9 @@ const rootReducer = (state, action) => {
   return reducer(state, action)
 };
 
-const store = configureStore({
+const makeStore = () => configureStore({
   reducer: rootReducer,
   devTools: true,
 });
 
-export default store;
+export const wrapper = createWrapper(makeStore);

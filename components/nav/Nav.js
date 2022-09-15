@@ -11,19 +11,20 @@ import {
   NavbarToggler,
   NavbarBrand,
 } from "reactstrap";
-import { spotifyLogin } from "utils/utils";
-import { cloudService } from "services/cloudService";
-import logoSmall from "../../assets/img/synchtify-dark.svg";
+import { spotifyLogin } from "../../lib/utils";
+import { cloudService } from "../../services/cloudService";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import HowTo from "components/dashboard/HowTo";
+import { useRouter } from "next/router";
+import HowTo from "../dashboard/HowTo";
+
+const logoSmall = "/img/synchtify-dark.svg";
 
 const Nav = () => {
   const userData = useSelector((state) => state.user.data);
   const [collapsed, setCollapsed] = useState(true);
   const [navScroll, setNavScroll] = useState(false);
   const [modal, setModal] = useState(false);
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const toggle = () => setModal(!modal);
 
@@ -130,7 +131,7 @@ const Nav = () => {
               <Button
                 color="accent"
                 className="btn-rounded text-center px-4 container-sm py-4 py-sm-2"
-                onClick={() => navigate("/logout")}
+                onClick={() => router.push("/logout")}
               >
                 Logout
               </Button>
