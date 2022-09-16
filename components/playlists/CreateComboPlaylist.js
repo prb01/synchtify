@@ -18,7 +18,7 @@ import { useEffect, useState } from "react";
 
 const CreateComboPlaylist = (props) => {
   const dispatch = useDispatch();
-  const [uploading, setUploading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const { user, spotifyUser, playlist } = useSelector((state) => state);
 
   const {
@@ -56,7 +56,7 @@ const CreateComboPlaylist = (props) => {
       alert("Error saving product: " + JSON.stringify(errors));
     } else {
       try {
-        setUploading(true);
+        setIsLoading(true);
         const playlists = data.playlists.map((playlist) =>
           JSON.parse(playlist.playlist)
         );
@@ -79,10 +79,10 @@ const CreateComboPlaylist = (props) => {
         await cloudService.refreshNewCombinedPlaylist(comboData);
 
         reset();
-        setUploading(false);
+        setIsLoading(false);
         console.log("added to Spotify & DB");
       } catch (error) {
-        setUploading(false);
+        setIsLoading(false);
       }
     }
   };
@@ -91,7 +91,7 @@ const CreateComboPlaylist = (props) => {
     <>
       <Form
         onSubmit={handleSubmit(onSubmit)}
-        className="p-3 my-3 border border-secondary form-rounded text-text"
+        className="position-relative p-3 my-3 border border-secondary form-rounded text-text"
       >
         <h2 className="text-center mb-4">Create new combined playlist</h2>
         <FormGroup row>
@@ -172,16 +172,23 @@ const CreateComboPlaylist = (props) => {
         </Row>
 
         <div className="d-flex justify-content-center">
-          <Button type="submit" color="secondary" className="text-primary">
+          <Button type="submit" color="secondary" className="text-primary" disabled={isLoading}>
+            {isLoading && (
+              <Spinner
+                color="danger"
+                as="span"
+                animation="border"
+                size="sm"
+                role="status"
+                aria-hidden="true"
+                className="me-2"
+              >
+                ...
+              </Spinner>
+            )}
             Save New Playlist
           </Button>
         </div>
-
-        {uploading && (
-          <Spinner color="secondary" className="position-absolute top-50 start-50">
-            Loading...
-          </Spinner>
-        )}
       </Form>
     </>
   );
