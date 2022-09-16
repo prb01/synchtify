@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no"
+    />
+    <meta
+      name="description"
+      content="Combine & synchronise your favourite Spotify playlists."
+    />
+    <meta name="theme-color" content="#000000" />
+    <meta property="og:site_name" content="Synchtify" />
+    <meta
+      property="og:description"
+      content="Combine & synchronise your favourite Spotify playlists."
+    />
+    <meta
+      property="og:title"
+      content="Synchtify | Spotify Playlist Combiner/Syncher"
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="%PUBLIC_URL%/logo-share.png" />
+    <meta property="og:url" content="https://synchtify.prb01.com" />
+
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <title>Synchtify | Spotify Playlist Combiner/Syncher</title>
+  </head>
+  <body>
+    <noscript> You need to enable JavaScript to run this app. </noscript>
+    <script>
+      if (window.location.hostname === "localhost")
+        self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+    </script>
+    <div id="root"></div>
+  </body>
+</html>
