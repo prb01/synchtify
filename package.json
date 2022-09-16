@@ -43,7 +43,8 @@
     "build": "next build",
     "export": "yarn build && next export",
     "start": "next start",
-    "deploy": "yarn export && firebase deploy"
+    "deploy": "yarn export && firebase deploy --only hosting",
+    "deploy-all": "yarn export && firebase deploy"
   },
   "browserslist": [
     ">0.2%",
