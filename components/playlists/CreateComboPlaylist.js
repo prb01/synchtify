@@ -2,16 +2,23 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlusCircle, faMinusCircle } from "@fortawesome/free-solid-svg-icons";
 import { Controller, useForm, useFieldArray } from "react-hook-form";
 import { useDispatch, useSelector } from "react-redux";
-import { Button, Col, Row, Form, FormGroup, Input, Label } from "reactstrap";
 import {
-  createCombinedPlaylist,
-  fetchCombinedPlaylistsByUid,
-} from "../../redux/combinedPlaylist";
+  Button,
+  Col,
+  Row,
+  Form,
+  FormGroup,
+  Input,
+  Label,
+  Spinner,
+} from "reactstrap";
+import { createCombinedPlaylist } from "../../redux/combinedPlaylist";
 import { cloudService } from "../../services/cloudService";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const CreateComboPlaylist = (props) => {
   const dispatch = useDispatch();
+  const [uploading, setUploading] = useState(false);
   const { user, spotifyUser, playlist } = useSelector((state) => state);
 
   const {
@@ -49,6 +56,7 @@ const CreateComboPlaylist = (props) => {
       alert("Error saving product: " + JSON.stringify(errors));
     } else {
       try {
+        setUploading(true);
         const playlists = data.playlists.map((playlist) =>
           JSON.parse(playlist.playlist)
         );
@@ -71,8 +79,11 @@ const CreateComboPlaylist = (props) => {
         await cloudService.refreshNewCombinedPlaylist(comboData);
 
         reset();
+        setUploading(false);
         console.log("added to Spotify & DB");
-      } catch (error) {}
+      } catch (error) {
+        setUploading(false);
+      }
     }
   };
 
@@ -165,6 +176,12 @@ const CreateComboPlaylist = (props) => {
             Save New Playlist
           </Button>
         </div>
+
+        {uploading && (
+          <Spinner color="secondary" className="position-absolute top-50 start-50">
+            Loading...
+          </Spinner>
+        )}
       </Form>
     </>
   );
