@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useRouter } from "next/router";
+import Head from "next/head";
 import { Button, Spinner } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpotify } from "@fortawesome/free-brands-svg-icons";
@@ -9,6 +10,7 @@ import Nav from "../components/nav/Nav";
 import CreateComboPlaylist from "../components/playlists/CreateComboPlaylist";
 import ListOfComboPlaylists from "../components/playlists/ListOfComboPlaylists";
 import RefreshOverlay from "../components/dashboard/RefreshOverlay";
+import CommonHead from "../components/CommonHead";
 import { getDifferenceInMins, spotifyLogin, getRedirectURI } from "../lib/utils";
 import { addSpotifyAuth, updateSpotifyAuth } from "../redux/user";
 import { fetchCombinedPlaylistsByUid } from "../redux/combinedPlaylist";
@@ -116,56 +118,63 @@ const Dashboard = (props) => {
   };
 
   return (
-    <div className="vw-100 min-vh-100 h-100 d-flex flex-column align-items-center homepage-bg p-2 pt-5 text-text">
-      <Nav />
-      {!user.isLoaded && (
-        <Spinner color="secondary" className="position-absolute top-50 start-50">
-          Loading...
-        </Spinner>
-      )}
-      {user.hasErrors && "Error: Please try refreshing"}
-      {user.isLoaded && !user.hasErrors && !user.data.access_token && (
-        <div className="position-absolute top-50 start-50 translate-middle d-flex flex-column justify-content-center align-items-center overflow-hidden">
-          <h1 className="text-text mb-3">Connect your Spotify Account to start</h1>
-          <div className="d-flex justify-content-center">
-            <Button
-              color="secondary"
-              className="btn-rounded d-flex gap-2 align-items-center fs-4 text-primary"
-              onClick={handleConnectSpotify}
-            >
-              <FontAwesomeIcon icon={faSpotify} />
-              Connect Spotify
-            </Button>
-          </div>
-        </div>
-      )}
-      {user.isLoaded && !user.hasErrors && user.data.access_token && (
-        <>
-          {refreshRequired && (
-            <RefreshOverlay handleRefreshToken={handleRefreshToken} />
-          )}
-          <div>
-            {!spotifyUser.isLoaded &&
-              !playlist.isLoaded &&
-              !combinedPlaylist.isLoaded && (
-                <Spinner
-                  color="secondary"
-                  className="position-absolute top-50 start-50"
-                >
-                  Loading...
-                </Spinner>
-              )}
-            {playlist.hasErrors && `Error: Please try refreshing`}
-            {combinedPlaylist.hasErrors && `Error: Please try refreshing`}
-            {playlist.isLoaded && !playlist.hasErrors && <CreateComboPlaylist />}
+    <>
+      <CommonHead />
+      <Head>
+        <title key="title">Synchtify | Dashboard</title>
+      </Head>
 
-            {combinedPlaylist.isLoaded && !combinedPlaylist.hasErrors && (
-              <ListOfComboPlaylists combinedPlaylists={combinedPlaylist.data} />
-            )}
+      <div className="vw-100 min-vh-100 h-100 d-flex flex-column align-items-center homepage-bg p-2 pt-5 text-text">
+        <Nav />
+        {!user.isLoaded && (
+          <Spinner color="secondary" className="position-absolute top-50 start-50">
+            Loading...
+          </Spinner>
+        )}
+        {user.hasErrors && "Error: Please try refreshing"}
+        {user.isLoaded && !user.hasErrors && !user.data.access_token && (
+          <div className="position-absolute top-50 start-50 translate-middle d-flex flex-column justify-content-center align-items-center overflow-hidden">
+            <h1 className="text-text mb-3">Connect your Spotify Account to start</h1>
+            <div className="d-flex justify-content-center">
+              <Button
+                color="secondary"
+                className="btn-rounded d-flex gap-2 align-items-center fs-4 text-primary"
+                onClick={handleConnectSpotify}
+              >
+                <FontAwesomeIcon icon={faSpotify} />
+                Connect Spotify
+              </Button>
+            </div>
           </div>
-        </>
-      )}
-    </div>
+        )}
+        {user.isLoaded && !user.hasErrors && user.data.access_token && (
+          <>
+            {refreshRequired && (
+              <RefreshOverlay handleRefreshToken={handleRefreshToken} />
+            )}
+            <div>
+              {!spotifyUser.isLoaded &&
+                !playlist.isLoaded &&
+                !combinedPlaylist.isLoaded && (
+                  <Spinner
+                    color="secondary"
+                    className="position-absolute top-50 start-50"
+                  >
+                    Loading...
+                  </Spinner>
+                )}
+              {playlist.hasErrors && `Error: Please try refreshing`}
+              {combinedPlaylist.hasErrors && `Error: Please try refreshing`}
+              {playlist.isLoaded && !playlist.hasErrors && <CreateComboPlaylist />}
+
+              {combinedPlaylist.isLoaded && !combinedPlaylist.hasErrors && (
+                <ListOfComboPlaylists combinedPlaylists={combinedPlaylist.data} />
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    </>
   );
 };
 

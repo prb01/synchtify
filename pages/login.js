@@ -7,6 +7,8 @@ import { useRouter } from "next/router";
 import Script from "next/script";
 import { useAuth } from "../context/Auth";
 import firebase from "../lib/firebase"
+import CommonHead from "../components/CommonHead";
+import Head from "next/head";
 
 const componentLoginFroms = {
   login: LoginForm,
@@ -29,25 +31,31 @@ export default function Login(props) {
   }, [user]);
 
   return (
-    <div className="vh-100 vw-100 d-flex justify-contents-center align-items-center">
-      <div className="container-lg container-fluid">
-        <div className="row">
-          <div className="col-md-3 offset-md-2">
-            <h3 className="text-primary">Log in or create an account</h3>
-            <p>
-              Quickly get started by signing in using your existing accounts.{" "}
-              <i className="blockquote-footer">
-                (Note this does not need to be the same email as your Spotify
-                account.)
-              </i>
-            </p>
-          </div>
-          <div className="col-md-6">
-            <Component {...props} setForm={setForm} />
+    <>
+      <CommonHead />
+      <Head>
+        <title key="title">Synchtify | Login</title>
+      </Head>
+      <div className="vh-100 vw-100 d-flex justify-contents-center align-items-center">
+        <div className="container-lg container-fluid">
+          <div className="row">
+            <div className="col-md-3 offset-md-2">
+              <h3 className="text-primary">Log in or create an account</h3>
+              <p>
+                Quickly get started by signing in using your existing accounts.{" "}
+                <i className="blockquote-footer">
+                  (Note this does not need to be the same email as your Spotify
+                  account.)
+                </i>
+              </p>
+            </div>
+            <div className="col-md-6">
+              <Component {...props} setForm={setForm} />
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 

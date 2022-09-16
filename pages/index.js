@@ -1,4 +1,5 @@
 import Link from "next/link";
+import CommonHead from "../components/CommonHead";
 
 export async function getStaticProps(context) {
   return {
@@ -8,56 +9,59 @@ export async function getStaticProps(context) {
 
 const Home = () => {
   return (
-    <div className="vh-100 vw-100 d-flex justify-content-center align-items-center homepage-bg p-2 overflow-hidden">
-      <div className="d-flex flex-column text-center justify-content-center">
-        <div className="position-relative">
-          <p className="text-text logo-large text-shadow mb-n4 mb-xl-n5">
-            <span className="logo-left">
-              <u>Synch</u>
-            </span>
-            <span className="logo-right text-secondary">
-              <u>tify</u>
-            </span>
-          </p>
-        </div>
-        <div className="position-relative">
-          <p className="text-text font-weight-bold lh-sm text-shadow headline blur-in">
-            Combine & Synch your favourite playlists
-          </p>
-        </div>
-        <div className="mt-4">
-          <div className="mb-2">
-            <Link href="/login">
-              <a
-                role="button"
-                className="opacity-0 btn-lg btn-accent text-primary text-decoration-none blur-in font-weight-bold p-2 px-5"
-              >
-                Sign Up
-              </a>
-            </Link>
+    <>
+      <CommonHead />
+      <div className="vh-100 vw-100 d-flex justify-content-center align-items-center homepage-bg p-2 overflow-hidden">
+        <div className="d-flex flex-column text-center justify-content-center">
+          <div className="position-relative">
+            <p className="text-text logo-large text-shadow mb-n4 mb-xl-n5">
+              <span className="logo-left">
+                <u>Synch</u>
+              </span>
+              <span className="logo-right text-secondary">
+                <u>tify</u>
+              </span>
+            </p>
           </div>
-          <div className="d-sm-none mt-4">
-            <Link href="/login">
-              <a
-                role="button"
-                className="opacity-0 btn-lg btn-text text-primary text-decoration-none blur-in font-weight-bold p-2 px-5"
-              >
-                Login
-              </a>
-            </Link>
+          <div className="position-relative">
+            <p className="text-text font-weight-bold lh-sm text-shadow headline blur-in">
+              Combine & Synch your favourite playlists
+            </p>
           </div>
+          <div className="mt-4">
+            <div className="mb-2">
+              <Link href="/login">
+                <a
+                  role="button"
+                  className="opacity-0 btn-lg btn-accent text-primary text-decoration-none blur-in font-weight-bold p-2 px-5"
+                >
+                  Sign Up
+                </a>
+              </Link>
+            </div>
+            <div className="d-sm-none mt-4">
+              <Link href="/login">
+                <a
+                  role="button"
+                  className="opacity-0 btn-lg btn-text text-primary text-decoration-none blur-in font-weight-bold p-2 px-5"
+                >
+                  Login
+                </a>
+              </Link>
+            </div>
 
-          <p className="text-text d-none d-sm-block opacity-0 blur-in">
-            or{" "}
-            <Link href="/login">
-              <a className="text-text">
-                <u>login</u>
-              </a>
-            </Link>
-          </p>
+            <p className="text-text d-none d-sm-block opacity-0 blur-in">
+              or{" "}
+              <Link href="/login">
+                <a className="text-text">
+                  <u>login</u>
+                </a>
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

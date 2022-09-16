@@ -1,5 +1,6 @@
 import "../styles/custom.scss";
 import "../styles/styles.css";
+import "@fortawesome/fontawesome-svg-core/styles.css";
 import { AuthProvider } from "../context/Auth";
 import { Provider } from "react-redux";
 import { wrapper } from "../redux/store";
