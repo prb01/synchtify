@@ -6,14 +6,15 @@ const AuthContext = createContext({
   isLoading: true,
   isLoaded: false,
   user: null,
+  clear: () => {}
 });
 
-export const AuthProvider = ({ children, onLogin }) => {
-  const { user, isLoading, isLoaded } = useFirebaseAuth(onLogin);
+export const AuthProvider = ({ children }) => {
+  const { user, isLoading, isLoaded, isAuthenticated, clear } = useFirebaseAuth();
 
   return (
     <AuthContext.Provider
-      value={{ isLoading, isLoaded, user, isAuthenticated: !!user }}
+      value={{ isLoading, isLoaded, user, isAuthenticated, clear }}
     >
       {children}
     </AuthContext.Provider>
