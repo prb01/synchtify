@@ -49,9 +49,11 @@ const Home = () => {
 
           <p className="text-text d-none d-sm-block opacity-0 blur-in">
             or{" "}
-            <a href="/login" className="text-text">
-              <u>login</u>
-            </a>
+            <Link href="/login">
+              <a className="text-text">
+                <u>login</u>
+              </a>
+            </Link>
           </p>
         </div>
       </div>
