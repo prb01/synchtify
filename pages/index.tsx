@@ -1,7 +1,8 @@
 import Link from "next/link";
 import CommonHead from "../components/CommonHead";
+import { GetStaticProps } from "next";
 
-export async function getStaticProps(context) {
+export const getStaticProps: GetStaticProps = async (context) => {
   return {
     props: {},
   };
