@@ -6,7 +6,7 @@ import StyledFirebaseAuth from "react-firebaseui/StyledFirebaseAuth";
 import { useRouter } from "next/router";
 import Script from "next/script";
 import { useAuth } from "../context/Auth";
-import firebase from "../lib/firebase"
+import firebase from "../lib/firebase";
 import CommonHead from "../components/CommonHead";
 import Head from "next/head";
 
@@ -15,9 +15,9 @@ const componentLoginFroms = {
   email: EmailLogin,
 };
 
-export default function Login(props) {
+export default function Login() {
   const { user } = useAuth();
-  const [form, setForm] = useState("login");
+  const [form, setForm] = useState<string>("login");
   const router = useRouter();
   const Component = componentLoginFroms[form];
 
@@ -50,7 +50,7 @@ export default function Login(props) {
               </p>
             </div>
             <div className="col-md-6">
-              <Component {...props} setForm={setForm} />
+              <Component setForm={setForm} />
             </div>
           </div>
         </div>
@@ -59,52 +59,29 @@ export default function Login(props) {
   );
 }
 
-function LoginForm(props) {
-  const { setForm } = props;
+function LoginForm({ setForm }) {
+  // https://stackoverflow.com/questions/47532134/changing-the-domain-shown-by-google-account-chooser
 
-  // right now, the oauth form shows a firebae domain.
-  // do not worory, others use magic link as well https://stackoverflow.com/questions/47532134/changing-the-domain-shown-by-google-account-chooser
-
-  const handleLogin = (provider) => {
-    return firebase
-      .auth()
-      .signInWithPopup(provider)
-      .then((result) => {
-        var credential = result.credential;
-
-        // This gives you a Google Access Token. You can use it to access the Google API.
-        var token = credential.accessToken;
-        // The signed-in user info.
-        var user = result.user;
-      })
-      .catch((error) => {
-        // Handle Errors here.
-        var errorCode = error.code;
-        var errorMessage = error.message;
-        // The email of the user's account used.
-        var email = error.email;
-        // The firebase.auth.AuthCredential type that was used.
-        var credential = error.credential;
-        console.error(error);
-        alert(error);
-        // ...
-      });
+  const handleLogin = async (provider) => {
+    try {
+      return await firebase.auth().signInWithPopup(provider);
+    } catch (error) {
+      console.error(error);
+      alert(error);
+    }
   };
 
-  const handleGoogleLogin = (e) => {
-    e.preventDefault();
+  const handleGoogleLogin = () => {
     const googleProvider = new firebase.auth.GoogleAuthProvider();
     return handleLogin(googleProvider);
   };
 
-  const handleFacebookLogin = (e) => {
-    e.preventDefault();
+  const handleFacebookLogin = () => {
     const facebookProvider = new firebase.auth.FacebookAuthProvider();
     return handleLogin(facebookProvider);
   };
 
-  const handleEmailLogin = (e) => {
-    e.preventDefault();
+  const handleEmailLogin = () => {
     setForm("email");
   };
 
@@ -174,9 +151,7 @@ function LoginForm(props) {
   );
 }
 
-function EmailLogin(props) {
-  const { firebase } = props;
-
+function EmailLogin() {
   // Configure FirebaseUI.
   const uiConfig = {
     // Popup signin flow rather than redirect flow.
