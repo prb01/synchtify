@@ -12,10 +12,10 @@ import ListOfComboPlaylists from "../components/playlists/ListOfComboPlaylists";
 import RefreshOverlay from "../components/dashboard/RefreshOverlay";
 import CommonHead from "../components/CommonHead";
 import { getDifferenceInMins, spotifyLogin, getRedirectURI } from "../lib/utils";
-import { addSpotifyAuth, updateSpotifyAuth, UserState } from "../redux/user";
-import { fetchCombinedPlaylistsByUid, CombinedPlaylistState } from "../redux/combinedPlaylist";
-import { fetchSpotifyPlaylists, PlaylistState } from "../redux/playlist";
-import { fetchSpotifyMe, SpotifyUserState } from "../redux/spotifyUser";
+import { addSpotifyAuth, updateSpotifyAuth } from "../redux/user";
+import { fetchCombinedPlaylistsByUid } from "../redux/combinedPlaylist";
+import { fetchSpotifyPlaylists } from "../redux/playlist";
+import { fetchSpotifyMe } from "../redux/spotifyUser";
 
 const Dashboard = () => {
   const { isLoading, isAuthenticated } = useAuth();
@@ -29,11 +29,6 @@ const Dashboard = () => {
     spotifyUser,
     playlist,
     combinedPlaylist,
-  }: {
-    user: UserState;
-    spotifyUser: SpotifyUserState;
-    playlist: PlaylistState;
-    combinedPlaylist: CombinedPlaylistState;
   } = useAppSelector((state) => state);
 
   const handleConnectSpotify = () => {

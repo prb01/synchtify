@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Playlist from "./Playlist";
-import { useDispatch, useSelector } from "react-redux";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import { deleteCombinedPlaylist } from "../../redux/combinedPlaylist";
 import {
   Accordion,
@@ -14,16 +14,16 @@ import {
 } from "reactstrap";
 
 const ComboPlaylist = ({ combinedPlaylist, idx }) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [open, setOpen] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const access_token = useSelector((state) => state.user?.data?.access_token);
+  const access_token = useAppSelector((state) => state.user?.data?.access_token);
 
-  const toggle = (id) => {
+  const toggle = (id: string) => {
     open === id ? setOpen("") : setOpen(id);
   };
 
-  const deleteComboPlaylist = (id) => {
+  const deleteComboPlaylist = (id: string) => {
     if (confirm("Are you sure you want to delete?")) {
       setIsLoading(true);
       dispatch(deleteCombinedPlaylist({ id, access_token }))
@@ -31,6 +31,8 @@ const ComboPlaylist = ({ combinedPlaylist, idx }) => {
   };
 
   return (
+    // @ts-ignore
+    // https://github.com/reactstrap/reactstrap/issues/2165
     <Accordion flush toggle={toggle} open={open} className="position-relative">
       <AccordionItem className="bg-secondary">
         <AccordionHeader targetId={idx}>

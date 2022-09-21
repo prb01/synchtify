@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlusCircle, faMinusCircle } from "@fortawesome/free-solid-svg-icons";
 import { Controller, useForm, useFieldArray } from "react-hook-form";
-import { useDispatch, useSelector } from "react-redux";
+import { useAppDispatch, useAppSelector } from "../../redux/hooks";
 import {
   Button,
   Col,
@@ -17,9 +17,14 @@ import { cloudService } from "../../services/cloudService";
 import { useEffect, useState } from "react";
 
 const CreateComboPlaylist = (props) => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const [isLoading, setIsLoading] = useState(false);
-  const { user, spotifyUser, playlist } = useSelector((state) => state);
+  const { user, spotifyUser, playlist } = useAppSelector((state) => state);
+
+  type FormValues = {
+    name: string;
+    playlists: { value: string }[];
+  };
 
   const {
     register,
@@ -27,14 +32,11 @@ const CreateComboPlaylist = (props) => {
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm({
+  } = useForm<FormValues>({
     mode: "onChange",
-    defaultValues: {
-      name: "",
-    },
   });
 
-  const { fields, append, remove } = useFieldArray({
+  const { fields, append, remove } = useFieldArray<FormValues>({
     control,
     name: "playlists",
   });
@@ -47,31 +49,32 @@ const CreateComboPlaylist = (props) => {
 
   // Limit # of playlists
   useEffect(() => {
-    if (fields.length < 2) append("");
+    if (fields.length < 2) append({ value: "" });
     if (fields.length > 5) remove(fields.length - 1);
   }, [fields]);
 
-  const onSubmit = async (data) => {
+  const onSubmit = async ({
+    name,
+    playlists,
+  }) => {
     if (Object.keys(errors).length) {
       alert("Error saving product: " + JSON.stringify(errors));
     } else {
       try {
         setIsLoading(true);
-        const playlists = data.playlists.map((playlist) =>
-          JSON.parse(playlist.playlist)
-        );
+        const parsedPlaylists = playlists.map((playlist: string) => JSON.parse(playlist));
 
         const { id } = await cloudService.createPlaylist(
           spotifyUser.data.id,
           user.data.access_token,
-          data.name
+          name
         );
 
         const comboData = {
           id,
           uid: user.data.uid,
-          name: data.name,
-          playlists,
+          name,
+          playlists: parsedPlaylists,
         };
 
         await dispatch(createCombinedPlaylist({ ...comboData }));
@@ -118,26 +121,28 @@ const CreateComboPlaylist = (props) => {
                 </Label>
                 <Col xs={10} sm={8}>
                   <Controller
-                    name={`playlists.${idx}.playlist`}
+                    name={`playlists.${idx}`}
                     control={control}
-                    render={({ field }) => (
-                      <Input id="playlist" type="select" {...field}>
-                        <option value="" hidden></option>
-                        {playlist.isLoaded &&
-                          playlist.data.map((playlist) => (
-                            <option
-                              key={playlist.id}
-                              value={JSON.stringify({
-                                name: playlist.name,
-                                id: playlist.id,
-                                snapshotId: playlist.snapshot_id,
-                              })}
-                            >
-                              {playlist.name}
-                            </option>
-                          ))}
-                      </Input>
-                    )}
+                    render={({ field }) => {
+                      return (
+                        <Input type="select" id="playlist" onChange={field.onChange}>
+                          <option value="" hidden></option>
+                          {playlist.isLoaded &&
+                            playlist.data.map((playlist) => (
+                              <option
+                                key={playlist.id}
+                                value={JSON.stringify({
+                                  name: playlist.name,
+                                  id: playlist.id,
+                                  snapshotId: playlist.snapshot_id,
+                                })}
+                              >
+                                {playlist.name}
+                              </option>
+                            ))}
+                        </Input>
+                      );
+                    }}
                   />
                 </Col>
                 <Col
@@ -163,7 +168,7 @@ const CreateComboPlaylist = (props) => {
           <Col xs={2} className="d-flex align-items-center justify-content-start">
             <Button
               outline
-              onClick={() => append("")}
+              onClick={() => append({ value: "" })}
               className="rounded-circle fs-6"
             >
               <FontAwesomeIcon icon={faPlusCircle} />
@@ -172,7 +177,12 @@ const CreateComboPlaylist = (props) => {
         </Row>
 
         <div className="d-flex justify-content-center">
-          <Button type="submit" color="secondary" className="text-primary" disabled={isLoading}>
+          <Button
+            type="submit"
+            color="secondary"
+            className="text-primary"
+            disabled={isLoading}
+          >
             {isLoading && (
               <Spinner
                 color="danger"

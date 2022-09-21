@@ -77,7 +77,7 @@ export const fetchCombinedPlaylistsByUid = createAsyncThunk<any, { uid: string }
 
 export const createCombinedPlaylist = createAsyncThunk<
   string | boolean,
-  { id: string; uid: string; name: string; playlists: [] }
+  { id: string; uid: string; name: string; playlists: any[] }
 >("combinedPlaylist/createCombinedPlaylist", async (payload, thunkAPI) => {
   try {
     await _createCombinedPlaylistInDb(
