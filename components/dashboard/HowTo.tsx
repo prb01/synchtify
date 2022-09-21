@@ -1,4 +1,4 @@
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from "reactstrap";
+import { Button, Modal, ModalHeader, ModalBody } from "reactstrap";
 
 const removalLink = (
   <a
