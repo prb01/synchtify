@@ -1,7 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleQuestion } from "@fortawesome/free-solid-svg-icons";
-import { faSpotify } from "@fortawesome/free-brands-svg-icons";
-import { useSelector } from "react-redux";
+import { useAppSelector } from "../../redux/hooks";
 import {
   Nav as StrapNav,
   NavItem,
@@ -16,11 +15,12 @@ import { cloudService } from "../../services/cloudService";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import HowTo from "../dashboard/HowTo";
+import { UserState } from "../../redux/user";
 
 const logoSmall = "/img/synchtify-dark.svg";
 
 const Nav = () => {
-  const userData = useSelector((state) => state.user.data);
+  const { user: { data: userData} }: {user: UserState} = useAppSelector((state) => state);
   const [collapsed, setCollapsed] = useState(true);
   const [navScroll, setNavScroll] = useState(false);
   const [modal, setModal] = useState(false);
