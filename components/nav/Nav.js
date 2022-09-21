@@ -119,16 +119,6 @@ const Nav = () => {
             </NavItem>
             <NavItem className="">
               <Button
-                color="secondary"
-                className="btn-rounded d-flex gap-2 justify-content-center align-items-center container-sm py-4 py-sm-2"
-                onClick={handleConnectSpotify}
-              >
-                <FontAwesomeIcon icon={faSpotify} />
-                (re)Connect Spotify
-              </Button>
-            </NavItem>
-            <NavItem className="">
-              <Button
                 color="accent"
                 className="btn-rounded text-center px-4 container-sm py-4 py-sm-2"
                 onClick={() => router.push("/logout")}

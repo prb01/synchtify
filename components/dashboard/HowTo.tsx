@@ -1,4 +1,6 @@
-import { Button, Modal, ModalHeader, ModalBody } from "reactstrap";
+import { Button, Modal, ModalHeader, ModalBody, Container } from "reactstrap";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSpotify } from "@fortawesome/free-brands-svg-icons";
 
 const removalLink = (
   <a
@@ -44,6 +46,14 @@ const HowTo = ({ modal, toggle, handleConnectSpotify }) => {
               Spotify account
             </a>
           </div>
+          <Button
+            color="secondary"
+            className="btn-rounded d-flex gap-2 justify-content-center align-items-center container-sm py-4 py-sm-1 mt-1 mb-3 w-75"
+            onClick={handleConnectSpotify}
+          >
+            <FontAwesomeIcon icon={faSpotify} />
+            (re)Connect Spotify
+          </Button>
           <div>Give your new Combined Playlist a name</div>
           <div>Select the playlists you want to combine</div>
           <div>Click "Save New Playlist"</div>
