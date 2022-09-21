@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useAppDispatch, useAppSelector } from "../redux/hooks";
 import { useRouter } from "next/router";
 import Head from "next/head";
 import { Button, Spinner } from "reactstrap";
@@ -12,21 +12,30 @@ import ListOfComboPlaylists from "../components/playlists/ListOfComboPlaylists";
 import RefreshOverlay from "../components/dashboard/RefreshOverlay";
 import CommonHead from "../components/CommonHead";
 import { getDifferenceInMins, spotifyLogin, getRedirectURI } from "../lib/utils";
-import { addSpotifyAuth, updateSpotifyAuth } from "../redux/user";
-import { fetchCombinedPlaylistsByUid } from "../redux/combinedPlaylist";
-import { fetchSpotifyPlaylists } from "../redux/playlist";
-import { fetchSpotifyMe } from "../redux/spotifyUser";
+import { addSpotifyAuth, updateSpotifyAuth, UserState } from "../redux/user";
+import { fetchCombinedPlaylistsByUid, CombinedPlaylistState } from "../redux/combinedPlaylist";
+import { fetchSpotifyPlaylists, PlaylistState } from "../redux/playlist";
+import { fetchSpotifyMe, SpotifyUserState } from "../redux/spotifyUser";
+import { RootState } from "../redux/store";
 
-const Dashboard = (props) => {
+const Dashboard = () => {
   const { isLoading, isAuthenticated } = useAuth();
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const router = useRouter();
   const redirectURI = getRedirectURI();
-  const [timeoutId, setTimeoutId] = useState();
+  const [timeoutId, setTimeoutId] = useState(null);
   const [refreshRequired, setRefreshRequired] = useState(false);
-  const { user, spotifyUser, playlist, combinedPlaylist } = useSelector(
-    (state) => state
-  );
+  const {
+    user,
+    spotifyUser,
+    playlist,
+    combinedPlaylist,
+  }: {
+    user: UserState;
+    spotifyUser: SpotifyUserState;
+    playlist: PlaylistState;
+    combinedPlaylist: CombinedPlaylistState;
+  } = useAppSelector((state) => state);
 
   const handleConnectSpotify = () => {
     spotifyLogin();
@@ -34,7 +43,10 @@ const Dashboard = (props) => {
 
   useEffect(() => {
     // if not authenticated, navigate to login
-    if (!isLoading && !isAuthenticated) return router.push("/login");
+    if (!isLoading && !isAuthenticated) {
+      router.push("/login");
+      return;
+    }
 
     // if router not ready, return
     if (!router.isReady) return;
@@ -79,7 +91,7 @@ const Dashboard = (props) => {
 
       const id = setTimeout(() => {
         setRefreshRequired(true);
-        setTimeoutId();
+        setTimeoutId(null);
         return;
       }, timeToWaitInMs);
 
@@ -90,10 +102,10 @@ const Dashboard = (props) => {
     // If true, then get Spotify details for user & fetch their Spotify playlists
     if (user.data.access_token) {
       dispatch(fetchSpotifyMe({ access_token: user.data.access_token })).then(
-        (data) => {
+        ({ payload }) => {
           dispatch(
             fetchSpotifyPlaylists({
-              user: data.payload,
+              user: payload as string,
               access_token: user.data.access_token,
             })
           );

@@ -1,9 +1,25 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import firebaseClient from "../lib/firebase";
 import firebase from "firebase/app";
 import { cloudService } from "../services/cloudService";
 
-const initialState = {
+export interface UserState {
+  data: {
+    uid?: string;
+    access_token?: string;
+    refresh_token?: string;
+    admin?: boolean;
+    updatedAt?: string;
+    createdAt?: string;
+  };
+
+  isLoaded: boolean;
+  hasErrors: boolean;
+  existsInDb: boolean;
+  errorMsg: {};
+}
+
+const initialState: UserState = {
   data: {},
   isLoaded: false,
   hasErrors: false,
@@ -17,17 +33,17 @@ const user = createSlice({
   reducers: {
     getData: (state) => {},
 
-    getDataSuccess: (state, action) => {
+    getDataSuccess: (state, action: PayloadAction<any>) => {
       state.isLoaded = true;
       state.data = action.payload;
     },
 
-    getDataFailure: (state, action) => {
+    getDataFailure: (state, action: PayloadAction<any>) => {
       state.isLoaded = true;
       state.hasErrors = true;
       state.errorMsg = action.payload;
     },
-    createDataFailure: (state, action) => {
+    createDataFailure: (state, action: PayloadAction<any>) => {
       state.hasErrors = true;
       state.errorMsg = action.payload;
     },
@@ -36,12 +52,12 @@ const user = createSlice({
       state.hasErrors = false;
       state.errorMsg = {};
     },
-    appendDataSuccess: (state, action) => {
+    appendDataSuccess: (state, action: PayloadAction<any>) => {
       state.isLoaded = true;
       state.existsInDb = true;
       state.data = { ...state.data, ...action.payload };
     },
-    appendDataFailure: (state, action) => {
+    appendDataFailure: (state, action: PayloadAction<any>) => {
       state.isLoaded = true;
       state.hasErrors = true;
       state.errorMsg = action.payload;
@@ -63,7 +79,7 @@ export const {
   logout,
 } = user.actions;
 
-export const fetchUser = createAsyncThunk(
+export const fetchUser = createAsyncThunk<void, { uid: string }>(
   "user/fetchUser",
   async (payload, thunkAPI) => {
     thunkAPI.dispatch(appendData());
@@ -90,7 +106,7 @@ export const fetchUser = createAsyncThunk(
   }
 );
 
-export const createUserData = createAsyncThunk(
+export const createUserData = createAsyncThunk<void, { uid: string }>(
   "user/createUserData",
   async (payload, thunkAPI) => {
     try {
@@ -102,68 +118,69 @@ export const createUserData = createAsyncThunk(
   }
 );
 
-export const updateUserData = createAsyncThunk(
-  "user/updateUserData",
-  async (payload, thunkAPI) => {
-    try {
-      await _updateUserData(
-        payload.uid,
-        payload.access_token,
-        payload.refresh_token
-      );
-      thunkAPI.dispatch(fetchUser(payload));
-    } catch (error) {
-      thunkAPI.dispatch(createDataFailure(error.message));
-    }
+export const updateUserData = createAsyncThunk<
+  void,
+  { uid: string; access_token: string; refresh_token: string }
+>("user/updateUserData", async (payload, thunkAPI) => {
+  try {
+    await _updateUserData(payload.uid, payload.access_token, payload.refresh_token);
+    thunkAPI.dispatch(fetchUser(payload));
+  } catch (error) {
+    thunkAPI.dispatch(createDataFailure(error.message));
   }
-);
+});
 
-export const addSpotifyAuth = createAsyncThunk(
-  "user/addSpotifyAuth",
-  async (payload, thunkAPI) => {
-    try {
-      const data = await cloudService.getAccessToken(
-        payload.code,
-        payload.state,
-        payload.redirectURI
-      );
-
-      thunkAPI.dispatch(
-        updateUserData({
-          uid: payload.uid,
-          access_token: data.access_token,
-          refresh_token: data.refresh_token,
-        })
-      );
-    } catch (error) {
-      thunkAPI.dispatch(createDataFailure(error.message));
-    }
+export const addSpotifyAuth = createAsyncThunk<
+  void,
+  {
+    uid: string;
+    code: string | string[];
+    state: string | string[];
+    redirectURI: string;
   }
-);
+>("user/addSpotifyAuth", async (payload, thunkAPI) => {
+  try {
+    const data = await cloudService.getAccessToken(
+      payload.code,
+      payload.state,
+      payload.redirectURI
+    );
 
-export const updateSpotifyAuth = createAsyncThunk(
-  "user/updateSpotifyAuth",
-  async (payload, thunkAPI) => {
-    try {
-      const data = await cloudService.getRefreshedAccessToken(
-        payload.refresh_token,
-        payload.redirectURI
-      );
-
-      thunkAPI.dispatch(
-        updateUserData({
-          uid: payload.uid,
-          access_token: data.access_token,
-          refresh_token: data.refresh_token,
-        })
-      );
-    } catch (error) {
-      thunkAPI.dispatch(createDataFailure(error.message));
-    }
+    thunkAPI.dispatch(
+      updateUserData({
+        uid: payload.uid,
+        access_token: data.access_token,
+        refresh_token: data.refresh_token,
+      })
+    );
+  } catch (error) {
+    thunkAPI.dispatch(createDataFailure(error.message));
   }
-);
+});
 
-export async function _fetchUserFromDb(uid) {
+export const updateSpotifyAuth = createAsyncThunk<
+  void,
+  { uid: string; refresh_token: string; redirectURI: string }
+>("user/updateSpotifyAuth", async (payload, thunkAPI) => {
+  try {
+    const data = await cloudService.getRefreshedAccessToken(
+      payload.refresh_token,
+      payload.redirectURI
+    );
+
+    thunkAPI.dispatch(
+      updateUserData({
+        uid: payload.uid,
+        access_token: data.access_token,
+        refresh_token: data.refresh_token,
+      })
+    );
+  } catch (error) {
+    thunkAPI.dispatch(createDataFailure(error.message));
+  }
+});
+
+export async function _fetchUserFromDb(uid: string) {
   const snapshot = await firebaseClient
     .firestore()
     .collection("users")
@@ -175,7 +192,7 @@ export async function _fetchUserFromDb(uid) {
   return data;
 }
 
-async function _createUserData(uid) {
+async function _createUserData(uid: string) {
   const doc = await firebaseClient.firestore().collection("users").doc(uid).set({
     uid,
     access_token: null,
@@ -187,7 +204,11 @@ async function _createUserData(uid) {
   return doc;
 }
 
-async function _updateUserData(uid, access_token, refresh_token) {
+async function _updateUserData(
+  uid: string,
+  access_token: string,
+  refresh_token: string
+) {
   const updateFields = refresh_token
     ? { access_token, refresh_token }
     : { access_token };

@@ -1,8 +1,14 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { cloudService } from "../services/cloudService";
 
-const initialState = {
-  data: {},
+export interface PlaylistState {
+  data: [{}];
+  isLoaded: boolean;
+  hasErrors: boolean;
+}
+
+const initialState: PlaylistState = {
+  data: [{}],
   isLoaded: false,
   hasErrors: false,
 };
@@ -11,14 +17,14 @@ const playlist = createSlice({
   name: "playlist",
   initialState,
   reducers: {
-    getData: (state) => {},
+    getData: (_) => {},
 
-    getDataSuccess: (state, action) => {
+    getDataSuccess: (state, action: PayloadAction<any>) => {
       state.isLoaded = true;
       state.data = action.payload;
     },
 
-    getDataFailure: (state, action) => {
+    getDataFailure: (state, _) => {
       state.isLoaded = true;
       state.hasErrors = true;
     },
@@ -29,7 +35,7 @@ export const reducer = playlist.reducer;
 
 export const { getData, getDataSuccess, getDataFailure } = playlist.actions;
 
-export const fetchSpotifyPlaylists = createAsyncThunk(
+export const fetchSpotifyPlaylists = createAsyncThunk<void, {user: string, access_token: string}>(
   "playlist/fetchSpotifyPlaylists",
   async (payload, thunkAPI) => {
     try {
@@ -45,7 +51,7 @@ export const fetchSpotifyPlaylists = createAsyncThunk(
 
       thunkAPI.dispatch(getDataSuccess(sortedPlaylists));
     } catch (error) {
-      thunkAPI.dispatch(getDataFailure());
+      thunkAPI.dispatch(getDataFailure(null));
     }
   }
 );

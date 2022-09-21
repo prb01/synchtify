@@ -24,5 +24,9 @@ const makeStore = () => configureStore({
   reducer: rootReducer,
   devTools: true,
 });
+const store = makeStore();
 
 export const wrapper = createWrapper(makeStore);
+
+export type RootState = ReturnType<typeof rootReducer>;
+export type AppDispatch = typeof store.dispatch;

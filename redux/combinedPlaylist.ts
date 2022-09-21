@@ -1,10 +1,21 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { cloudService } from "../services/cloudService";
-import firebaseClient from "../lib/firebase"
+import firebaseClient from "../lib/firebase";
 import firebase from "firebase/app";
 
-const initialState = {
-  data: {},
+export interface CombinedPlaylistState {
+  data: {
+    id?: string;
+    name?: string;
+    uid?: string;
+    playlists?: [{}];
+  }[];
+  isLoaded: boolean;
+  hasErrors: boolean;
+}
+
+const initialState: CombinedPlaylistState = {
+  data: [{}],
   isLoaded: false,
   hasErrors: false,
 };
@@ -13,18 +24,18 @@ const combinedPlaylist = createSlice({
   name: "combinedPlaylist",
   initialState,
   reducers: {
-    getData: (state) => {},
+    getData: (_) => {},
 
-    getDataSuccess: (state, action) => {
+    getDataSuccess: (state, action: PayloadAction<any>) => {
       state.isLoaded = true;
       state.data = action.payload;
     },
 
-    getDataFailure: (state, action) => {
+    getDataFailure: (state, _) => {
       state.isLoaded = true;
       state.hasErrors = true;
     },
-    createDataSuccess: (state, action) => {
+    createDataSuccess: (state, action: PayloadAction<any>) => {
       state.data.push(action.payload);
       state.isLoaded = true;
       state.hasErrors = false;
@@ -32,7 +43,7 @@ const combinedPlaylist = createSlice({
     createDataFailure: (state) => {
       state.hasErrors = true;
     },
-    removeData: (state, action) => {
+    removeData: (state, action: PayloadAction<any>) => {
       state.data = state.data.filter((playlist) => playlist.id !== action.payload);
     },
   },
@@ -49,7 +60,7 @@ export const {
   removeData,
 } = combinedPlaylist.actions;
 
-export const fetchCombinedPlaylistsByUid = createAsyncThunk(
+export const fetchCombinedPlaylistsByUid = createAsyncThunk<any, { uid: string }>(
   "combinedPlaylist/fetchCombinedPlaylists",
   async (payload, thunkAPI) => {
     thunkAPI.dispatch(getData());
@@ -59,45 +70,45 @@ export const fetchCombinedPlaylistsByUid = createAsyncThunk(
       thunkAPI.dispatch(getDataSuccess(data));
       return data;
     } catch (error) {
-      thunkAPI.dispatch(getDataFailure());
+      thunkAPI.dispatch(getDataFailure(null));
     }
   }
 );
 
-export const createCombinedPlaylist = createAsyncThunk(
-  "combinedPlaylist/createCombinedPlaylist",
-  async (payload, thunkAPI) => {
-    try {
-      await _createCombinedPlaylistInDb(
-        payload.id,
-        payload.uid,
-        payload.name,
-        payload.playlists
-      );
+export const createCombinedPlaylist = createAsyncThunk<
+  string | boolean,
+  { id: string; uid: string; name: string; playlists: [] }
+>("combinedPlaylist/createCombinedPlaylist", async (payload, thunkAPI) => {
+  try {
+    await _createCombinedPlaylistInDb(
+      payload.id,
+      payload.uid,
+      payload.name,
+      payload.playlists
+    );
 
-      thunkAPI.dispatch(createDataSuccess(payload));
+    thunkAPI.dispatch(createDataSuccess(payload));
 
-      return payload.id;
-    } catch (error) {
-      thunkAPI.dispatch(createDataFailure());
-      return false;
-    }
+    return payload.id;
+  } catch (error) {
+    thunkAPI.dispatch(createDataFailure());
+    return false;
   }
-);
+});
 
-export const deleteCombinedPlaylist = createAsyncThunk(
-  "combinedPlaylist/deleteCombinedPlaylist",
-  async (payload, thunkAPI) => {
-    try {
-      await cloudService.unfollowPlaylist(payload.id, payload.access_token);
+export const deleteCombinedPlaylist = createAsyncThunk<
+  void,
+  { id: string; access_token: string }
+>("combinedPlaylist/deleteCombinedPlaylist", async (payload, thunkAPI) => {
+  try {
+    await cloudService.unfollowPlaylist(payload.id, payload.access_token);
 
-      await _deleteCombinedPlaylistFromDb(payload.id);
-      thunkAPI.dispatch(removeData(payload.id));
-    } catch (error) {
-      console.log(error.message);
-    }
+    await _deleteCombinedPlaylistFromDb(payload.id);
+    thunkAPI.dispatch(removeData(payload.id));
+  } catch (error) {
+    console.log(error.message);
   }
-);
+});
 
 async function _fetchCombinedPlaylistsByUidFromDb(uid) {
   const snapshot = await firebaseClient
@@ -109,7 +120,7 @@ async function _fetchCombinedPlaylistsByUidFromDb(uid) {
   const data = snapshot.docs.map((doc) => ({
     id: doc.id,
     ...doc.data(),
-    updatedAt: doc.updatedAt?.toDate().toISOString(),
+    updatedAt: doc["updatedAt"]?.toDate().toISOString(),
   }));
 
   return data;

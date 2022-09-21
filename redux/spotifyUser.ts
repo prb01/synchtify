@@ -1,7 +1,17 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { cloudService } from "../services/cloudService";
 
-const initialState = {
+export interface SpotifyUserState {
+  data: {
+    display_name?: string;
+    href?: string;
+    id?: string;
+  };
+  isLoaded: boolean;
+  hasErrors: boolean;
+}
+
+const initialState: SpotifyUserState = {
   data: {},
   isLoaded: false,
   hasErrors: false,
@@ -11,14 +21,14 @@ const spotifyUser = createSlice({
   name: "spotifyUser",
   initialState,
   reducers: {
-    getData: (state) => {},
+    getData: (_) => {},
 
-    getDataSuccess: (state, action) => {
+    getDataSuccess: (state, action: PayloadAction<any>) => {
       state.isLoaded = true;
       state.data = action.payload;
     },
 
-    getDataFailure: (state, action) => {
+    getDataFailure: (state, _) => {
       state.isLoaded = true;
       state.hasErrors = true;
     },
@@ -27,13 +37,9 @@ const spotifyUser = createSlice({
 
 export const reducer = spotifyUser.reducer;
 
-export const {
-  getData,
-  getDataSuccess,
-  getDataFailure,
-} = spotifyUser.actions;
+export const { getData, getDataSuccess, getDataFailure } = spotifyUser.actions;
 
-export const fetchSpotifyMe = createAsyncThunk(
+export const fetchSpotifyMe = createAsyncThunk<string, { access_token: string }>(
   "spotifyUser/fetchSpotifyMe",
   async (payload, thunkAPI) => {
     try {
@@ -41,9 +47,9 @@ export const fetchSpotifyMe = createAsyncThunk(
       const data = await cloudService.getMe(payload.access_token);
       thunkAPI.dispatch(getDataSuccess(data));
 
-      return data.id;
+      return data.id as string;
     } catch (error) {
-      thunkAPI.dispatch(getDataFailure());
+      thunkAPI.dispatch(getDataFailure(null));
     }
   }
 );
