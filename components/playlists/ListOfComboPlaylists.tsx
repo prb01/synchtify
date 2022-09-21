@@ -1,4 +1,4 @@
-import { useSelector } from "react-redux";
+import { useAppSelector } from "../../redux/hooks";
 import { Container } from "reactstrap";
 import ComboPlaylist from "./ComboPlaylist";
 
@@ -7,7 +7,7 @@ const ListOfComboPlaylists = ({ combinedPlaylists }) => {
     data: spotifyUserData,
     isLoaded: spotifyUserIsLoaded,
     hasErrors: spotifyUserHasErrors,
-  } = useSelector((state) => state.spotifyUser);
+  } = useAppSelector((state) => state.spotifyUser);
 
   if (!combinedPlaylists || combinedPlaylists.length === 0) return null;
 
