@@ -16,7 +16,6 @@ import { addSpotifyAuth, updateSpotifyAuth, UserState } from "../redux/user";
 import { fetchCombinedPlaylistsByUid, CombinedPlaylistState } from "../redux/combinedPlaylist";
 import { fetchSpotifyPlaylists, PlaylistState } from "../redux/playlist";
 import { fetchSpotifyMe, SpotifyUserState } from "../redux/spotifyUser";
-import { RootState } from "../redux/store";
 
 const Dashboard = () => {
   const { isLoading, isAuthenticated } = useAuth();
