@@ -17,13 +17,13 @@ const rootReducer = (state, action) => {
   if (action.type === "user/logout") {
     state = undefined;
   }
-  return reducer(state, action)
+  return reducer(state, action);
 };
-
-const makeStore = () => configureStore({
-  reducer: rootReducer,
-  devTools: true,
-});
+const makeStore = () =>
+  configureStore({
+    reducer: rootReducer,
+    devTools: process.env.NODE_ENV === "development" ? true : false,
+  });
 const store = makeStore();
 
 export const wrapper = createWrapper(makeStore);
