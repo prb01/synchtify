@@ -3,6 +3,9 @@ import { cloudService } from "../services/cloudService";
 
 export interface PlaylistState {
   data: {
+    images?: any;
+    owner?: any;
+    external_urls?: any;
     name?: string;
     id?: string;
     snapshot_id?: string;

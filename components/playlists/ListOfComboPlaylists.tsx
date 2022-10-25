@@ -17,7 +17,7 @@ const ListOfComboPlaylists = ({ combinedPlaylists }) => {
       {spotifyUserHasErrors && `Error Loading...`}
       {spotifyUserIsLoaded && (
         <Container className="p-3 my-3 border border-secondary form-rounded text-text d-grid gap-3">
-          <h2 className="text-center mb-4">
+          <h2 className="text-center mb-2">
             {spotifyUserData?.display_name}'s Combined Playlists
           </h2>
           {combinedPlaylists.map((combinedPlaylist) => (

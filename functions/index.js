@@ -384,10 +384,11 @@ const _updatePlaylistsInDb = async (id, playlists) => {
   return doc;
 };
 
-const _createCombinedPlaylistInDb = async (collection, id, uid, name, playlists) => {
+const _createCombinedPlaylistInDb = async (collection, url, id, uid, name, playlists) => {
   try {
     await admin.firestore().collection(collection).doc(id).set({
       uid,
+      url,
       name,
       playlists,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
@@ -666,6 +667,7 @@ exports.backupCombinedPlaylists = functions.https.onCall(async (data, context) =
           await _createCombinedPlaylistInDb(
             backupCollection,
             combo.id,
+            combo.url,
             combo.uid,
             combo.name,
             combo.playlists

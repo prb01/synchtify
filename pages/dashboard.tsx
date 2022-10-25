@@ -11,6 +11,7 @@ import CreateComboPlaylist from "../components/playlists/CreateComboPlaylist";
 import ListOfComboPlaylists from "../components/playlists/ListOfComboPlaylists";
 import RefreshOverlay from "../components/dashboard/RefreshOverlay";
 import CommonHead from "../components/CommonHead";
+import SpotifyLogo from "../components/SpotifyLogo";
 import { getDifferenceInMins, spotifyLogin, getRedirectURI } from "../lib/utils";
 import { addSpotifyAuth, updateSpotifyAuth } from "../redux/user";
 import { fetchCombinedPlaylistsByUid } from "../redux/combinedPlaylist";
@@ -24,12 +25,9 @@ const Dashboard = () => {
   const redirectURI = getRedirectURI();
   const [timeoutId, setTimeoutId] = useState(null);
   const [refreshRequired, setRefreshRequired] = useState(false);
-  const {
-    user,
-    spotifyUser,
-    playlist,
-    combinedPlaylist,
-  } = useAppSelector((state) => state);
+  const { user, spotifyUser, playlist, combinedPlaylist } = useAppSelector(
+    (state) => state
+  );
 
   const handleConnectSpotify = () => {
     spotifyLogin();
@@ -174,7 +172,10 @@ const Dashboard = () => {
               {playlist.isLoaded && !playlist.hasErrors && <CreateComboPlaylist />}
 
               {combinedPlaylist.isLoaded && !combinedPlaylist.hasErrors && (
-                <ListOfComboPlaylists combinedPlaylists={combinedPlaylist.data} />
+                <>
+                  <ListOfComboPlaylists combinedPlaylists={combinedPlaylist.data} />
+                  <SpotifyLogo />
+                </>
               )}
             </div>
           </>

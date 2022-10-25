@@ -12,6 +12,9 @@ import {
   Col,
   Spinner,
 } from "reactstrap";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
+import { faSpotify } from "@fortawesome/free-brands-svg-icons";
 
 const ComboPlaylist = ({ combinedPlaylist, idx }) => {
   const dispatch = useAppDispatch();
@@ -26,7 +29,7 @@ const ComboPlaylist = ({ combinedPlaylist, idx }) => {
   const deleteComboPlaylist = (id: string) => {
     if (confirm("Are you sure you want to delete?")) {
       setIsLoading(true);
-      dispatch(deleteCombinedPlaylist({ id, access_token }))
+      dispatch(deleteCombinedPlaylist({ id, access_token }));
     }
   };
 
@@ -36,7 +39,13 @@ const ComboPlaylist = ({ combinedPlaylist, idx }) => {
     <Accordion flush toggle={toggle} open={open} className="position-relative">
       <AccordionItem className="bg-secondary">
         <AccordionHeader targetId={idx}>
-          <h5>{combinedPlaylist.name}</h5>
+          <div className="d-flex gap-2 align-items-center justify-content-start">
+            <FontAwesomeIcon icon={faSpotify} color="#1DB954" />
+            <h5 className="mb-0">{combinedPlaylist.name}</h5>
+            <a href={combinedPlaylist.url} target="_blank">
+              <FontAwesomeIcon icon={faArrowUpRightFromSquare} color="gray" />
+            </a>
+          </div>
         </AccordionHeader>
         <AccordionBody accordionId={idx}>
           <Row className="gy-4">

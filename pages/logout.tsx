@@ -18,5 +18,5 @@ export default function Logout() {
       router.push("/");
     });
 
-  return "Logging out…";
+  return "";
 }

@@ -53,18 +53,20 @@ const CreateComboPlaylist = (props) => {
     if (fields.length > 5) remove(fields.length - 1);
   }, [fields]);
 
-  const onSubmit = async ({
-    name,
-    playlists,
-  }) => {
+  const onSubmit = async ({ name, playlists }) => {
     if (Object.keys(errors).length) {
       alert("Error saving product: " + JSON.stringify(errors));
     } else {
       try {
         setIsLoading(true);
-        const parsedPlaylists = playlists.map((playlist: string) => JSON.parse(playlist));
+        const parsedPlaylists = playlists.map((playlist: string) =>
+          JSON.parse(playlist)
+        );
 
-        const { id } = await cloudService.createPlaylist(
+        const {
+          id,
+          external_urls: { spotify: url },
+        } = await cloudService.createPlaylist(
           spotifyUser.data.id,
           user.data.access_token,
           name
@@ -72,6 +74,7 @@ const CreateComboPlaylist = (props) => {
 
         const comboData = {
           id,
+          url,
           uid: user.data.uid,
           name,
           playlists: parsedPlaylists,
@@ -133,8 +136,14 @@ const CreateComboPlaylist = (props) => {
                                 key={playlist.id}
                                 value={JSON.stringify({
                                   name: playlist.name,
+                                  url: playlist.external_urls.spotify,
                                   id: playlist.id,
+                                  owner: playlist.owner.display_name,
                                   snapshotId: playlist.snapshot_id,
+                                  cover:
+                                    playlist.images.length > 0
+                                      ? playlist.images[0].url
+                                      : "",
                                 })}
                               >
                                 {playlist.name}

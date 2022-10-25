@@ -77,11 +77,12 @@ export const fetchCombinedPlaylistsByUid = createAsyncThunk<any, { uid: string }
 
 export const createCombinedPlaylist = createAsyncThunk<
   string | boolean,
-  { id: string; uid: string; name: string; playlists: any[] }
+  { id: string; url: string; uid: string; name: string; playlists: any[] }
 >("combinedPlaylist/createCombinedPlaylist", async (payload, thunkAPI) => {
   try {
     await _createCombinedPlaylistInDb(
       payload.id,
+      payload.url,
       payload.uid,
       payload.name,
       payload.playlists
@@ -126,9 +127,10 @@ async function _fetchCombinedPlaylistsByUidFromDb(uid) {
   return data;
 }
 
-async function _createCombinedPlaylistInDb(id, uid, name, playlists) {
+async function _createCombinedPlaylistInDb(id, url, uid, name, playlists) {
   await firebaseClient.firestore().collection("combined_playlists").doc(id).set({
     uid,
+    url,
     name,
     playlists,
     updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
