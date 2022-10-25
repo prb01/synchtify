@@ -26,7 +26,7 @@ const Home = () => {
           </div>
           <div className="position-relative">
             <p className="text-text font-weight-bold lh-sm text-shadow headline blur-in">
-              Combine & Synch your favourite playlists
+              Combine & Synch your favourite Spotify playlists
             </p>
           </div>
           <div className="mt-4">
