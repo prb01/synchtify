@@ -13,7 +13,7 @@ const Home = () => {
     <>
       <CommonHead />
       <div
-        className="vh-100 vw-100 d-flex justify-content-center align-items-center homepage-bg p-2 overflow-hidden"
+        className="min-vh-100 h-100 vw-100 d-flex justify-content-center align-items-center homepage-bg p-2 overflow-hidden"
         style={{ height: "100%" }}
       >
         <div className="d-flex flex-column text-center justify-content-center">
