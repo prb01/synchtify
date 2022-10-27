@@ -12,10 +12,7 @@ const Home = () => {
   return (
     <>
       <CommonHead />
-      <div
-        className="vw-100 h-100 min-vh-100 d-flex justify-content-center align-items-center homepage-bg p-2 overflow-hidden"
-        style={{ height: "100%" }}
-      >
+      <div className="vw-100 h-100 min-vh-100 d-flex justify-content-center align-items-center homepage-bg p-2 overflow-hidden">
         <div className="d-flex flex-column text-center justify-content-center">
           <div className="position-relative">
             <p className="text-text logo-large text-shadow mb-n4 mb-xl-n5">
