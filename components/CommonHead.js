@@ -4,7 +4,7 @@ import Script from "next/script";
 export default function CommonHead() {
   return (
     <Head>
-      <meta charset="utf-8" />
+      <meta charSet="utf-8" />
       <link rel="shortcut icon" href="/favicon.ico" key="shortcutIcon" />
       
       <meta

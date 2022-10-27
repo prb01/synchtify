@@ -11,6 +11,7 @@ import {
   Input,
   Label,
   Spinner,
+  Container,
 } from "reactstrap";
 import { createCombinedPlaylist } from "../../redux/combinedPlaylist";
 import { cloudService } from "../../services/cloudService";
@@ -94,10 +95,9 @@ const CreateComboPlaylist = (props) => {
   };
 
   return (
-    <>
+    <Container className="position-relative p-3 my-3 border border-secondary form-rounded text-text">
       <Form
         onSubmit={handleSubmit(onSubmit)}
-        className="position-relative p-3 my-3 border border-secondary form-rounded text-text"
       >
         <h2 className="text-center mb-4">Create new combined playlist</h2>
         <FormGroup row>
@@ -209,7 +209,7 @@ const CreateComboPlaylist = (props) => {
           </Button>
         </div>
       </Form>
-    </>
+    </Container>
   );
 };
 
