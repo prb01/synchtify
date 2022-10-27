@@ -128,10 +128,7 @@ const Dashboard = () => {
         <title key="title">Synchtify | Dashboard</title>
       </Head>
 
-      <div
-        className="vw-100 min-vh-100 h-100 d-flex flex-column align-items-center homepage-bg p-2 pt-5 text-text"
-        style={{ height: "100%" }}
-      >
+      <div className="vw-100 h-100 min-vh-100 d-flex flex-column align-items-center homepage-bg p-2 pt-5 text-text">
         <Nav />
         {!user.isLoaded && (
           <Spinner color="secondary" className="position-absolute top-50 start-50">
