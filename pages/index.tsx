@@ -6,13 +6,16 @@ export const getStaticProps: GetStaticProps = async (context) => {
   return {
     props: {},
   };
-}
+};
 
 const Home = () => {
   return (
     <>
       <CommonHead />
-      <div className="vh-100 vw-100 d-flex justify-content-center align-items-center homepage-bg p-2 overflow-hidden">
+      <div
+        className="vh-100 vw-100 d-flex justify-content-center align-items-center homepage-bg p-2 overflow-hidden"
+        style={{ height: "100%" }}
+      >
         <div className="d-flex flex-column text-center justify-content-center">
           <div className="position-relative">
             <p className="text-text logo-large text-shadow mb-n4 mb-xl-n5">
