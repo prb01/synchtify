@@ -37,6 +37,7 @@ export default function Login() {
         <title key="title">Synchtify | Login</title>
       </Head>
       <div className="vh-100 vw-100 d-flex justify-contents-center align-items-center">
+        <div className="login-bg"></div>
         <div className="container-lg container-fluid">
           <div className="row">
             <div className="col-md-3 offset-md-2">
