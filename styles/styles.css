@@ -9,14 +9,22 @@ body {
   font-family: "Roboto", Verdana, Tahoma, sans-serif;
   height: 100%;
   overflow-x: hidden;
+}
+
+.homepage-bg::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: -15px;
+  background-color:#22272E;
   background-image: url('/img/homepage-bg.webp');
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center center;
   background-attachment: fixed;
-}
-
-.homepage-bg {
+  z-index: -1;
 }
 
 .navbar {
