@@ -12,6 +12,10 @@ body {
   background-color: #22272E !important;
 }
 
+.homepage-bg, .login-bg {
+  transition: 2s;
+}
+
 .homepage-bg::before {
   content: '';
   position: fixed;
