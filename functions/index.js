@@ -339,7 +339,7 @@ const sleep = (ms) => {
   return new Promise((resolve) => setTimeout(resolve, ms));
 };
 
-const retry = (maxRetries, fn, sleepTime = 1500, name = "") => {
+const retry = (maxRetries, fn, sleepTime = 1000, name = "") => {
   return fn().catch(async (error) => {
     if (maxRetries <= 0) {
       console.log(error.message);
@@ -352,7 +352,7 @@ const retry = (maxRetries, fn, sleepTime = 1500, name = "") => {
 
     await sleep(sleepTime);
 
-    return retry(maxRetries - 1, fn, sleepTime);
+    return retry(maxRetries - 1, fn, sleepTime * 2);
   });
 };
 
