@@ -95,16 +95,14 @@ const CreateComboPlaylist = (props) => {
   };
 
   return (
-    <Container className="position-relative p-3 my-3 border border-secondary form-rounded text-text">
-      <Form
-        onSubmit={handleSubmit(onSubmit)}
-      >
-        <h2 className="text-center mb-4">Create new combined playlist</h2>
+    <Container className="position-relative px-3 py-5 my-3 border border-secondary form-rounded text-text">
+      <Form onSubmit={handleSubmit(onSubmit)}>
+        <h2 className="text-center mb-5">Create new combined playlist</h2>
         <FormGroup row>
-          <Label for="name" sm={2}>
+          <Label for="name" sm={2} className="text-sm-end">
             Name<span className="text-danger">*</span>
           </Label>
-          <Col sm={8}>
+          <Col xs={10} sm={8}>
             <Input
               id="name"
               type="text"
@@ -119,7 +117,7 @@ const CreateComboPlaylist = (props) => {
           {fields.map((item, idx) => (
             <li key={item.id}>
               <FormGroup row>
-                <Label for="playlist" sm={2}>
+                <Label for="playlist" sm={2} className="text-sm-end">
                   Playlist<span className="text-danger">*</span>
                 </Label>
                 <Col xs={10} sm={8}>
@@ -159,14 +157,18 @@ const CreateComboPlaylist = (props) => {
                   sm={2}
                   className="d-flex align-items-center justify-content-start"
                 >
-                  <Button
-                    outline
-                    color="accent"
-                    onClick={() => remove(idx)}
-                    className="rounded-circle fs-6"
-                  >
-                    <FontAwesomeIcon icon={faMinusCircle} />
-                  </Button>
+                  {idx === fields.length - 1 && (
+                    <Button
+                      outline
+                      color="btn-grey"
+                      type="button"
+                      onClick={() => remove(idx)}
+                      className="d-flex align-items-center justify-content-center rounded-circle fs-6"
+                      style={{ width: "35px", height: "35px" }}
+                    >
+                      <FontAwesomeIcon icon={faMinusCircle} />
+                    </Button>
+                  )}
                 </Col>
               </FormGroup>
             </li>
@@ -176,9 +178,9 @@ const CreateComboPlaylist = (props) => {
           <Col xs={10}></Col>
           <Col xs={2} className="d-flex align-items-center justify-content-start">
             <Button
-              outline
               onClick={() => append({ value: "" })}
-              className="rounded-circle fs-6"
+              className="d-flex align-items-center justify-content-center rounded-circle fs-6"
+              style={{ width: "35px", height: "35px" }}
             >
               <FontAwesomeIcon icon={faPlusCircle} />
             </Button>
