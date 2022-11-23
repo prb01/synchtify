@@ -31,8 +31,8 @@ const Home = () => {
               <Link href="/login">
                 <a
                   role="button"
-                  className="d-block opacity-0 btn-lg btn-accent text-primary text-decoration-none blur-in font-weight-bold p-2 px-5"
-                  style={{ width: "150px" }}
+                  className="d-block opacity-0 btn-lg btn-accent text-primary text-decoration-none blur-in font-weight-bold p-2 px-2"
+                  style={{ width: "160px" }}
                 >
                   Sign Up
                 </a>
@@ -42,8 +42,8 @@ const Home = () => {
               <Link href="/login">
                 <a
                   role="button"
-                  className="d-block opacity-0 btn-lg btn-text text-primary text-decoration-none blur-in font-weight-bold p-2 px-5"
-                  style={{ width: "150px" }}
+                  className="d-block opacity-0 btn-lg btn-text text-primary text-decoration-none blur-in font-weight-bold p-2 px-2"
+                  style={{ width: "160px" }}
                 >
                   Login
                 </a>
