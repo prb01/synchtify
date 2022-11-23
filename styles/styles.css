@@ -134,7 +134,8 @@ div.list div:before {
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
   animation-timing-function: ease-out;
-
+  text-decoration: underline;
+  text-underline-offset: 2rem;
 }
 
 .logo-left {
@@ -182,7 +183,8 @@ div.list div:before {
 .headline {
   opacity: 0;
   user-select: none;
-  font-size: clamp(1rem, 0.58rem + 1.5vw, 2.3rem);
+  /* font-size: 20px; */
+  font-size: clamp(20px, 0.58rem + 1.5vw, 2.2rem);
 }
 
 .opacity-0 {
@@ -207,4 +209,12 @@ div.list div:before {
 
 .btn-rounded {
   border-radius: 20px;
+}
+
+@media only screen and (max-width: 768px) {
+  /* For mobile phones: */
+  .logo-left,
+.logo-right {
+  text-underline-offset: 1rem;
+}
 }
