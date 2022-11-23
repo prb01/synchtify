@@ -31,15 +31,12 @@ body {
   z-index: -1;
 }
 
-.login-bg::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #fff;
-  z-index: -1;
+.login-bg {
+  background: linear-gradient(0deg, rgba(74, 189, 172, 0.2), rgba(74, 189, 172, 0.2)), url('/img/login-bg.webp');
+  background-size: cover;
+  background-position: center;
+  width: 120vw;
+  height: 100vh;
 }
 
 .navbar {

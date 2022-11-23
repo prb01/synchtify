@@ -1,6 +1,7 @@
 import { Form, FormGroup, Row, Col, Input, Label, Button } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faFacebook, faGoogle } from "@fortawesome/free-brands-svg-icons";
+import { faArrowLeft, faEnvelope } from "@fortawesome/free-solid-svg-icons";
 import { useEffect, useState } from "react";
 import StyledFirebaseAuth from "react-firebaseui/StyledFirebaseAuth";
 import { useRouter } from "next/router";
@@ -37,11 +38,16 @@ export default function Login() {
         <title key="title">Synchtify | Login</title>
       </Head>
       <div className="vh-100 vw-100 d-flex justify-contents-center align-items-center">
-        <div className="login-bg"></div>
-        <div className="container-lg container-fluid">
-          <div className="row">
-            <div className="col-md-3 offset-md-2">
-              <h3 className="text-primary">Log in or create an account</h3>
+        <div className="login-bg d-none d-md-block"></div>
+        <div className="d-flex justify-content-center align-items-center container-fluid bg-white w-100 h-100">
+          <Col
+            md={8}
+            className="d-flex flex-column justify-contents-center p-5 gap-2"
+          >
+            <Row>
+              <h3 className="text-primary fw-bold">Log in or create an account</h3>
+            </Row>
+            <Row className="mb-5">
               <p>
                 Quickly get started by signing in using your existing accounts.{" "}
                 <i className="blockquote-footer">
@@ -49,11 +55,11 @@ export default function Login() {
                   account.)
                 </i>
               </p>
-            </div>
-            <div className="col-md-6">
+            </Row>
+            <Row>
               <Component setForm={setForm} />
-            </div>
-          </div>
+            </Row>
+          </Col>
         </div>
       </div>
     </>
@@ -100,7 +106,7 @@ function LoginForm({ setForm }) {
     return (
       <>
         <Script src="https://cdn.iubenda.com/iubenda.js" />
-        <p className="small text-center text-muted font-weight-light">
+        <p className="small text-muted font-weight-light">
           By proceeding, you are agreeing to the {privacy}.
         </p>
       </>
@@ -112,56 +118,78 @@ function LoginForm({ setForm }) {
       <FormGroup>
         <TermsPrivacy />
       </FormGroup>
-      <Row>
-        <Col md={6} className="d-flex justify-content-center">
-          <FormGroup>
-            {/*   <Label for="about.firstName">First Name</Label>
-            <Input type="text" /> */}
-            <Button
-              className="btn-block btn-light d-flex flex-row justify-content-around align-items-center"
-              onClick={handleGoogleLogin}
-            >
-              <FontAwesomeIcon icon={faGoogle} className="me-2" />
-              Login with Google
-            </Button>
-          </FormGroup>
-        </Col>
-        <Col md={6} className="d-flex justify-content-center">
-          <FormGroup>
-            {/* for some reason btn-primary does not work? */}
-            <Button
-              className="btn-block d-flex flex-row justify-content-around align-items-center"
-              color="primary"
-              onClick={handleFacebookLogin}
-            >
-              <FontAwesomeIcon icon={faFacebook} className="me-2" />
-              Login with Facebook
-            </Button>
-          </FormGroup>
-        </Col>
+      <Row className="d-flex justify-content-center align-items-center">
+        {/* <Col md={6} className="d-flex justify-content-center"> */}
+        <FormGroup className="d-flex justify-content-center">
+          <Button
+            className="btn-block btn-light d-flex flex-row justify-content-around align-items-center w-100"
+            color="gg-grey"
+            onClick={handleGoogleLogin}
+          >
+            <Col md={1}>
+              <FontAwesomeIcon icon={faGoogle} />
+            </Col>
+            <Col>Login with Google</Col>
+          </Button>
+        </FormGroup>
+        {/* </Col> */}
+        {/* <Col md={6} className="d-flex justify-content-center"> */}
+        <FormGroup className="d-flex justify-content-center">
+          {/* for some reason btn-primary does not work? */}
+          <Button
+            className="btn-block d-flex flex-row justify-content-around align-items-center w-100"
+            color="fb-blue"
+            onClick={handleFacebookLogin}
+          >
+            <Col md={1}>
+              <FontAwesomeIcon icon={faFacebook} />
+            </Col>
+            <Col>Login with Facebook</Col>
+          </Button>
+        </FormGroup>
+        {/* </Col> */}
+        <FormGroup className="d-flex justify-content-center">
+          <Button
+            className="btn-block d-flex flex-row justify-content-around align-items-center w-100"
+            color="secondary"
+            onClick={handleEmailLogin}
+          >
+            <Col md={1}>
+              <FontAwesomeIcon icon={faEnvelope} />
+            </Col>
+            <Col>Login with Email</Col>
+          </Button>
+        </FormGroup>
       </Row>
-      <p className="small text-center font-weight-light">or</p>
-      <FormGroup>
-        <p className="small text-center text-muted font-weight-light">
-          <a href="#" onClick={handleEmailLogin}>
-            Login with email address.
-          </a>
-        </p>
-      </FormGroup>
     </Form>
   );
 }
 
-function EmailLogin() {
+function EmailLogin({ setForm }) {
   // Configure FirebaseUI.
   const uiConfig = {
     // Popup signin flow rather than redirect flow.
     signInFlow: "popup",
     // Redirect to /signedIn after sign in is successful. Alternatively you can provide a callbacks.signInSuccess function.
     signInSuccessUrl: "/dashboard",
-    // We will display Google and Facebook as auth providers.
     signInOptions: [firebase.auth.EmailAuthProvider.PROVIDER_ID],
   };
 
-  return <StyledFirebaseAuth uiConfig={uiConfig} firebaseAuth={firebase.auth()} />;
+  console.log("IN HERE");
+
+  return (
+    <div className="d-flex flex-column gap-2">
+      <Button
+        className="btn-block d-flex flex-row"
+        color="none"
+        onClick={() => setForm("login")}
+      >
+        <Col md={1}>
+          <FontAwesomeIcon icon={faArrowLeft} />
+        </Col>
+        <Col className="ms-2 text-start">Return</Col>
+      </Button>
+      <StyledFirebaseAuth uiConfig={uiConfig} firebaseAuth={firebase.auth()} />
+    </div>
+  );
 }
