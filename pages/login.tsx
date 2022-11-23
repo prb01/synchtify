@@ -41,7 +41,7 @@ export default function Login() {
         <div className="login-bg d-none d-md-block"></div>
         <div className="d-flex justify-content-center align-items-center container-fluid bg-white w-100 h-100">
           <Col
-            md={8}
+            md={9}
             className="d-flex flex-column justify-contents-center p-5 gap-2"
           >
             <Row>
