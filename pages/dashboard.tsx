@@ -157,7 +157,7 @@ const Dashboard = () => {
             {refreshRequired && (
               <RefreshOverlay handleRefreshToken={handleRefreshToken} />
             )}
-            <div style={{ minWidth: "50%" }}>
+            <div style={{ minWidth: "340px", maxWidth: "960px" }}>
               {!spotifyUser.isLoaded &&
                 !playlist.isLoaded &&
                 !combinedPlaylist.isLoaded && (
