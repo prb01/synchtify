@@ -71,9 +71,9 @@ const Nav = () => {
         container="sm"
         expand="sm"
       >
-        <NavbarBrand href="/" className="me-auto">
-          <span className="logo-small">Synch</span>
-          <span className="logo-small text-secondary">tify</span>
+        <NavbarBrand href="/" className="me-auto logo logo-small">
+          <span >Synch</span>
+          <span className="text-secondary">tify</span>
           {/* <img src={logoSmall} alt="SpotLislogo" style={{ width: "18%" }} /> */}
         </NavbarBrand>
         <NavbarToggler onClick={toggleNavbar} className="me-2" />

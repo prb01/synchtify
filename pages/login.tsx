@@ -39,18 +39,22 @@ export default function Login() {
       </Head>
       <div className="vh-100 vw-100 d-flex justify-contents-center align-items-center">
         <div className="login-bg d-none d-md-block"></div>
-        <div className="d-flex justify-content-center align-items-center container-fluid bg-white w-100 h-100">
+        <div className="d-flex justify-content-center align-items-center container-fluid bg-primary text-white w-100 h-100">
           <Col
             md={9}
-            className="d-flex flex-column justify-contents-center p-5 gap-2"
+            className="d-flex flex-column justify-contents-center p-2 p-md-5 gap-2 text-center text-md-start"
           >
+            <div className="d-flex justify-content-center mb-4 logo-med">
+              <span className="logo p-0 m-0">Synch</span>
+              <span className="logo p-0 m-0 text-secondary">tify</span>
+            </div>
             <Row>
-              <h3 className="text-primary fw-bold">Log in or create an account</h3>
+              <h3 className="fw-bold">Log in or create an account</h3>
             </Row>
             <Row className="mb-5">
               <p>
                 Quickly get started by signing in using your existing accounts.{" "}
-                <i className="blockquote-footer">
+                <i className="text-sub blockquote-footer">
                   (Note this does not need to be the same email as your Spotify
                   account.)
                 </i>
@@ -94,8 +98,9 @@ function LoginForm({ setForm }) {
 
   const privacy = (
     <a
+      id="privacy-policy"
       href="https://www.iubenda.com/privacy-policy/68367909"
-      className="iubenda-white iubenda-noiframe iubenda-embed iubenda-noiframe "
+      className="iubenda-white iubenda-noiframe iubenda-embed iubenda-noiframe"
       title="Privacy Policy"
     >
       Privacy Policy
@@ -106,7 +111,7 @@ function LoginForm({ setForm }) {
     return (
       <>
         <Script src="https://cdn.iubenda.com/iubenda.js" />
-        <p className="small text-muted font-weight-light">
+        <p className="small text-sub font-weight-light">
           By proceeding, you are agreeing to the {privacy}.
         </p>
       </>
@@ -185,9 +190,9 @@ function EmailLogin({ setForm }) {
         onClick={() => setForm("login")}
       >
         <Col md={1}>
-          <FontAwesomeIcon icon={faArrowLeft} />
+          <FontAwesomeIcon icon={faArrowLeft} color="white" />
         </Col>
-        <Col className="ms-2 text-start">Return</Col>
+        <Col className="ms-2 text-start text-white">Return</Col>
       </Button>
       <StyledFirebaseAuth uiConfig={uiConfig} firebaseAuth={firebase.auth()} />
     </div>
