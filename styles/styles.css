@@ -225,6 +225,10 @@ div.list div:before {
   border-radius: 20px;
 }
 
+#playlist:disabled {
+  background-color: #ff65420e;
+}
+
 @media only screen and (max-width: 768px) {
   /* For mobile phones: */
   .logo-left,

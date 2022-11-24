@@ -16,6 +16,7 @@ import {
 import { createCombinedPlaylist } from "../../redux/combinedPlaylist";
 import { cloudService } from "../../services/cloudService";
 import { useEffect, useState } from "react";
+import { textTruncate } from "../../lib/utils";
 
 const CreateComboPlaylist = (props) => {
   const dispatch = useAppDispatch();
@@ -126,9 +127,14 @@ const CreateComboPlaylist = (props) => {
                     control={control}
                     render={({ field }) => {
                       return (
-                        <Input type="select" id="playlist" onChange={field.onChange}>
+                        <Input
+                          type="select"
+                          id="playlist"
+                          onChange={field.onChange}
+                          disabled={!(playlist.isLoaded && !playlist.hasErrors)}
+                        >
                           <option value="" hidden></option>
-                          {playlist.isLoaded &&
+                          {playlist.isLoaded && !playlist.hasErrors &&
                             playlist.data.map((playlist) => (
                               <option
                                 key={playlist.id}
@@ -144,7 +150,7 @@ const CreateComboPlaylist = (props) => {
                                       : "",
                                 })}
                               >
-                                {playlist.name}
+                                {textTruncate(playlist.name, 55)}
                               </option>
                             ))}
                         </Input>

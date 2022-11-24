@@ -157,7 +157,7 @@ const Dashboard = () => {
             {refreshRequired && (
               <RefreshOverlay handleRefreshToken={handleRefreshToken} />
             )}
-            <div style={{ minWidth: "340px", maxWidth: "960px" }}>
+            <div style={{ minWidth: "340px", width: "60%", maxWidth: "960px" }}>
               {!spotifyUser.isLoaded &&
                 !playlist.isLoaded &&
                 !combinedPlaylist.isLoaded && (
@@ -170,14 +170,15 @@ const Dashboard = () => {
                 )}
               {playlist.hasErrors && `Error: Please try refreshing`}
               {combinedPlaylist.hasErrors && `Error: Please try refreshing`}
-              {playlist.isLoaded && !playlist.hasErrors && <CreateComboPlaylist />}
+              {/* {playlist.isLoaded && !playlist.hasErrors && <CreateComboPlaylist />} */}
+              <CreateComboPlaylist />
 
               {combinedPlaylist.isLoaded && !combinedPlaylist.hasErrors && (
                 <>
                   <ListOfComboPlaylists combinedPlaylists={combinedPlaylist.data} />
-                  <SpotifyLogo />
                 </>
               )}
+              <SpotifyLogo />
             </div>
           </>
         )}
