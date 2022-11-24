@@ -16,7 +16,7 @@ const Home = () => {
         <div className="homepage-bg"></div>
         <div className="d-flex flex-column text-center justify-content-center align-items-center">
           <div className="position-relative">
-            <p className="text-text logo-large text-shadow mb-n1 mb-xl-n2">
+            <p className="text-text logo logo-large text-shadow mb-n1 mb-xl-n2">
               <span className="logo-left">Synch</span>
               <span className="logo-right text-secondary">tify</span>
             </p>

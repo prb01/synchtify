@@ -12,7 +12,8 @@ $custom-colors: (
   "alt": #f5b800,
   "fb-blue": #4267B2,
   "gg-grey": #E6E6E6,
-  "btn-grey": #ff654275
+  "btn-grey": #ff654275,
+  "sub": #ffffff9f
   );
 $theme-colors: map-merge($theme-colors, $custom-colors);
   
