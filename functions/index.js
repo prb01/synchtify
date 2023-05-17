@@ -521,7 +521,7 @@ const _RefreshCombinedPlaylist = async (context, combo, firstRun = null) => {
   const tracksToAdd = [];
   for (const playlist of combo.playlists) {
     // get all songs from playlist, add to array
-    `GETTING TRACKS FOR PLAYLIST ${playlist.name} (${playlist.id})`
+    console.log(`GETTING TRACKS FOR PLAYLIST ${playlist.name} (${playlist.id})`);;
     const tracks = await retry(retries, () =>
       _getAllSongsFromPlaylist(
         {
@@ -532,8 +532,14 @@ const _RefreshCombinedPlaylist = async (context, combo, firstRun = null) => {
       )
     );
 
+    console.log('PULLED TRACKS');
     const tracksNotLocal = tracks
-      .filter((track) => track && !track.track.is_local)
+      .filter((track) => {
+        if (!(!!track && !!track.track && !track.track.is_local)) {
+          console.log(`Track: ${JSON.stringify(track)}`);
+        }
+        return !!track && !!track.track && !track.track.is_local;
+      })
       .map((track) => track.track.uri);
     tracksToAdd.push(...tracksNotLocal);
 
