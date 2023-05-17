@@ -532,7 +532,7 @@ const _RefreshCombinedPlaylist = async (context, combo, firstRun = null) => {
     );
 
     const tracksNotLocal = tracks
-      .filter((track) => !track.track.is_local)
+      .filter((track) => track && !track.track.is_local)
       .map((track) => track.track.uri);
     tracksToAdd.push(...tracksNotLocal);
 
