@@ -521,6 +521,7 @@ const _RefreshCombinedPlaylist = async (context, combo, firstRun = null) => {
   const tracksToAdd = [];
   for (const playlist of combo.playlists) {
     // get all songs from playlist, add to array
+    `GETTING TRACKS FOR PLAYLIST ${playlist.name} (${playlist.id})`
     const tracks = await retry(retries, () =>
       _getAllSongsFromPlaylist(
         {
