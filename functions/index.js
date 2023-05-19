@@ -406,6 +406,9 @@ const _RefreshCombinedPlaylist = async (context, combo, firstRun = null) => {
   let user = await _fetchUserFromDb(combo.uid);
   const uid = user.uid;
 
+  // Check if user has a refresh token, otherwise skip
+  if(!user.refresh_token) return null;
+
   console.log(`SYNCHING ${combo.name} for ${uid}`);
 
   // refresh token
@@ -671,10 +674,11 @@ exports.backupCombinedPlaylists = functions.https.onCall(async (data, context) =
         );
 
         for (const combo of combinedPlaylists) {
+          console.log(`BACKING UP ${combo.name} (${combo.id}) for ${combo.uid} [${backupCollection} ${combo.id}]`);
           await _createCombinedPlaylistInDb(
             backupCollection,
+            combo.url ?? "",
             combo.id,
-            combo.url,
             combo.uid,
             combo.name,
             combo.playlists
