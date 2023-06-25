@@ -102,6 +102,15 @@ const HowTo = ({ modal, toggle, handleConnectSpotify }) => {
           </div>
 
           <div>
+            <h3 className="">Is there a limit to number of songs I can combine?</h3>
+            <p className="ms-2">
+              Yes, we are currently seeing a limit of about 10,000 songs in a playlist.
+              Upon reaching that number, Spotify starts throwing errors. This app will prevent
+              a combined playlist that would have more than 10,000 songs.
+            </p>
+          </div>
+
+          <div>
             <h3 className="">How do I delete my account & all data?</h3>
             <p className="ms-2">
               We're sorry to see you go! If you want to delete your account and all

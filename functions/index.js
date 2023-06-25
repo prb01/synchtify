@@ -10,6 +10,8 @@ const baseURI = "https://accounts.spotify.com";
 const apiURI = "https://api.spotify.com/v1";
 const redirectURI = `https://synchtify.prb01.com/dashboard`;
 
+const SPOTIFY_PLAYLIST_LIMIT = 10000;
+
 // Common error to check that user is logged in to run function
 const checkUserLoggedIn = (context) => {
   if (!context.auth && context.resource.service !== "pubsub.googleapis.com") {
@@ -489,23 +491,28 @@ const _RefreshCombinedPlaylist = async (context, combo, firstRun = null) => {
       context
     )
   );
-  const tracksURI = tracks.map((track) => ({
-    uri: track.track.uri,
-  }));
+  const tracksURI = tracks.map((track) => {
+    if(!track.track) console.log(JSON.stringify(track));
+
+    return {
+      uri: track.track?.uri || null,  
+    }
+  });
+  const tracksURIFiltered = tracksURI.filter((track) => !!track.uri);
   console.log(`END FETCH ALL SONGS FROM COMBO (${uid}, ${combo.id})`);
 
   // remove all songs in combined playlist
   console.log(
-    `START REMOVING ${tracksURI.length} tracks in ${combo.name} (${uid}, ${combo.id})`
+    `START REMOVING ${tracksURIFiltered.length} tracks in ${combo.name} (${uid}, ${combo.id})`
   );
-  while (tracksURI.length > 0) {
+  while (tracksURIFiltered.length > 0) {
     const deleteResponse = await retry(retries, () =>
       _deleteSongsFromPlaylist(
         {
           playlist_id: combo.id,
           access_token: user.access_token,
           tracks: {
-            tracks: tracksURI.slice(0, 100),
+            tracks: tracksURIFiltered.slice(0, 100),
           },
         },
         context
@@ -513,7 +520,7 @@ const _RefreshCombinedPlaylist = async (context, combo, firstRun = null) => {
     );
 
     // only remove tracks if delete was successful
-    tracksURI.splice(0, 100);
+    tracksURIFiltered.splice(0, 100);
   }
   console.log(`END REMOVING tracks in ${combo.name} (${uid}, ${combo.id})`);
 
@@ -551,6 +558,14 @@ const _RefreshCombinedPlaylist = async (context, combo, firstRun = null) => {
   console.log(
     `END FETCH SONGS PLAYLISTS (${uid}, ${combo.id}, ${combo.playlists.length})`
   );
+
+  // Check if tracks to add is above 10k, if so, exit early
+  if (tracksToAdd.length > SPOTIFY_PLAYLIST_LIMIT) {
+    console.log(
+      `Cannot create ${combo.name} as it has too many songs. (${tracksToAdd.length}; limit ${SPOTIFY_PLAYLIST_LIMIT})`
+    );
+    return;
+  }
 
   // remove duplicates?
 
