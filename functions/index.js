@@ -264,7 +264,7 @@ const _getMe = (data, context) => {
 };
 
 const _getMeV2 = (request) => {
-  const { access_token } = request;
+  const { access_token } = request.data;
   const opts = {
     url: `${apiURI}/me`,
     method: "GET",
@@ -281,8 +281,8 @@ exports.getMe = functions.https.onCall(async (data, context) => {
   return await _getMe(data, context);
 });
 
-exports.getMeV2 = onCall(async (request) => {
-  return await _getMeV2(request);
+exports.getMeV2 = onCall({ cors: true }, async (request) => {
+    return await _getMeV2(request);
 });
 
 // Get all playlists
