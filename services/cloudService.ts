@@ -1,9 +1,7 @@
-// import firebase from "firebase/app";
 import app from "../lib/firebase";
-// require("firebase/functions");
 import { getFunctions, httpsCallable, connectFunctionsEmulator } from 'firebase/functions';
 const functions = getFunctions(app);
-connectFunctionsEmulator(functions, "127.0.0.1", 5001);
+// connectFunctionsEmulator(functions, "127.0.0.1", 5001);
 
 async function cloudAPICall(cloudFunction, payload = {}) : Promise<any> {
   try {
@@ -24,7 +22,7 @@ async function getRefreshedAccessToken(refreshToken, redirectURI) : Promise<any>
 }
 
 async function getMe(access_token) : Promise<any> {
-  return cloudAPICall("getMeV2", { access_token });
+  return cloudAPICall("getMe", { access_token });
 }
 
 async function getAllPlaylists(user, access_token) : Promise<any> {
@@ -55,7 +53,7 @@ async function createPlaylist(
   user_id,
   access_token,
   name,
-  description = "Combined playlist made with Synchtify (synchtify.prb01.com)"
+  description = "Combined playlist made with Synchtify (synchtify.com)"
 ) : Promise<any> {
   return cloudAPICall("createPlaylist", {
     user_id,
