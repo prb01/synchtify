@@ -1,7 +1,9 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
-import firebaseClient from "../lib/firebase";
-import firebase from "firebase/app";
+import app from "../lib/firebase";
+import { getFirestore, collection, doc, getDoc, setDoc, updateDoc, serverTimestamp } from "firebase/firestore";
 import { cloudService } from "../services/cloudService";
+
+const db = getFirestore(app);
 
 export interface UserState {
   data: {
@@ -168,6 +170,8 @@ export const updateSpotifyAuth = createAsyncThunk<
       payload.redirectURI
     );
 
+    console.log("updateSpotifyAuth", data);
+
     thunkAPI.dispatch(
       updateUserData({
         uid: payload.uid,
@@ -181,27 +185,25 @@ export const updateSpotifyAuth = createAsyncThunk<
 });
 
 export async function _fetchUserFromDb(uid: string) {
-  const snapshot = await firebaseClient
-    .firestore()
-    .collection("users")
-    .where("uid", "==", uid)
-    .get();
+  const docRef = doc(db,"users", uid);
+  const docSnap = await getDoc(docRef);
 
-  const data = snapshot.docs[0] ? { ...snapshot.docs[0].data() } : null;
+  const data = docSnap.exists() ? { ...docSnap.data() } : null;
 
   return data;
 }
 
 async function _createUserData(uid: string) {
-  const doc = await firebaseClient.firestore().collection("users").doc(uid).set({
+  const usersRef = collection(db, "users");
+  const result = await setDoc(doc(usersRef, uid), {
     uid,
     access_token: null,
     refresh_token: null,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-  });
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  })
 
-  return doc;
+  return result;
 }
 
 async function _updateUserData(
@@ -212,14 +214,12 @@ async function _updateUserData(
   const updateFields = refresh_token
     ? { access_token, refresh_token }
     : { access_token };
-  const doc = await firebaseClient
-    .firestore()
-    .collection("users")
-    .doc(uid)
-    .update({
-      ...updateFields,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-    });
+  
+  const userRef = doc(db, "users", uid);
+  const result = await updateDoc(userRef, {
+    ...updateFields,
+      updatedAt: serverTimestamp(),
+  })
 
-  return doc;
+  return result;
 }

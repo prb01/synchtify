@@ -1,7 +1,9 @@
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { cloudService } from "../services/cloudService";
-import firebaseClient from "../lib/firebase";
-import firebase from "firebase/app";
+import app from "../lib/firebase";
+import { getFirestore, collection, query, where, doc, getDocs, setDoc, deleteDoc, serverTimestamp } from "firebase/firestore";
+
+const db = getFirestore(app);
 
 export interface CombinedPlaylistState {
   data: {
@@ -112,37 +114,35 @@ export const deleteCombinedPlaylist = createAsyncThunk<
 });
 
 async function _fetchCombinedPlaylistsByUidFromDb(uid) {
-  const snapshot = await firebaseClient
-    .firestore()
-    .collection("combined_playlists")
-    .where("uid", "==", uid)
-    .get();
-
-  const data = snapshot.docs.map((doc) => ({
-    id: doc.id,
-    ...doc.data(),
-    updatedAt: doc["updatedAt"]?.toDate().toISOString(),
-  }));
+  const q = query(collection(db, "combined_playlists"), where("uid", "==", uid));
+  
+  const querySnapshot = await getDocs(q);
+  const data = [];
+  querySnapshot.forEach((doc) => {  
+    data.push(
+      {
+        id: doc.id,
+        ...doc.data(),
+        updatedAt: doc["updatedAt"]?.toDate().toISOString(),
+      });
+  });
 
   return data;
 }
 
 async function _createCombinedPlaylistInDb(id, url, uid, name, playlists) {
-  await firebaseClient.firestore().collection("combined_playlists").doc(id).set({
+  const combinedPlaylistRef = collection(db, "combined_playlists");
+  await setDoc(doc(combinedPlaylistRef, uid), {
     uid,
     url,
     name,
     playlists,
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedAt: serverTimestamp(),
   });
 }
 
 async function _deleteCombinedPlaylistFromDb(id) {
-  const snapshot = await firebaseClient
-    .firestore()
-    .collection("combined_playlists")
-    .doc(id)
-    .delete();
+  const snapshot = await deleteDoc(doc(db, "combined_playlists", id));
 
   return snapshot;
 }

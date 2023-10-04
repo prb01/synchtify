@@ -1,11 +1,13 @@
 // import firebase from "firebase/app";
-import firebase from "../lib/firebase";
-require("firebase/functions");
-// firebase.functions().useEmulator("localhost", 5001);
+import app from "../lib/firebase";
+// require("firebase/functions");
+import { getFunctions, httpsCallable, connectFunctionsEmulator } from 'firebase/functions';
+const functions = getFunctions(app);
+connectFunctionsEmulator(functions, "127.0.0.1", 5001);
 
 async function cloudAPICall(cloudFunction, payload) {
   try {
-    const _functionCall = firebase.functions().httpsCallable(cloudFunction);
+    const _functionCall = httpsCallable(functions, cloudFunction);
     const { data } = await _functionCall(payload);
     return data;
   } catch (error) {
