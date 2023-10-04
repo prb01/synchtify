@@ -1,5 +1,6 @@
 const axios = require("axios").default;
 const functions = require("firebase-functions");
+const {HttpsError, onCall, onRun} = require("firebase-functions/v2/https");
 const admin = require("firebase-admin");
 admin.initializeApp();
 
@@ -22,10 +23,28 @@ const checkUserLoggedIn = (context) => {
   } else return true;
 };
 
+const checkUserLoggedInV2 = (context) => {
+  if (!context.auth && context.resource.service !== "pubsub.googleapis.com") {
+    throw new HttpsError(
+      "failed-precondition",
+      "The function must be called while authenticated."
+    );
+  } else return true;
+};
+
 // Check user is accessing their own playlist
 const checkUserIsSelf = (context, userId) => {
   if (!(context.auth.uid === userId)) {
     throw new functions.https.HttpsError(
+      "failed-precondition",
+      "Data is not accessible for this user."
+    );
+  } else return true;
+};
+
+const checkUserIsSelfV2 = (context, userId) => {
+  if (!(context.auth.uid === userId)) {
+    throw new HttpsError(
       "failed-precondition",
       "Data is not accessible for this user."
     );
@@ -38,6 +57,17 @@ const checkUserIsAdmin = async (context) => {
 
   if (!user.admin) {
     throw new functions.https.HttpsError(
+      "failed-precondition",
+      "This function is only available to admins."
+    );
+  } else return true;
+};
+
+const checkUserIsAdminV2 = async (context) => {
+  const user = await _fetchUserFromDb(context.auth.uid);
+
+  if (!user.admin) {
+    throw new HttpsError(
       "failed-precondition",
       "This function is only available to admins."
     );
@@ -63,6 +93,28 @@ const spotifyAPICalls = async (context, opts) => {
       } else {
         // Something happened in setting up the request that triggered an Error
         throw new functions.https.HttpsError(error.status, error.message);
+      }
+    }
+  }
+
+  return null;
+};
+
+const spotifyAPICallsV2 = async (context, opts) => {
+  if (checkUserLoggedInV2(context)) {
+    try {
+      const response = await axios({ ...opts, timeout: 10000 });
+      return response.data;
+    } catch (error) {
+      if (error.response) {
+        // The request was made and the server responded with a non 2.x.x status
+        throw new HttpsError("unknown", error.message);
+      } else if (error.request) {
+        // The request was made but no response was received
+        throw new HttpsError("unavailable", "No response received.");
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        throw new HttpsError(error.status, error.message);
       }
     }
   }
@@ -100,8 +152,41 @@ const _getAccessToken = (data, context) => {
   return spotifyAPICalls(context, opts);
 };
 
+const _getAccessTokenV2 = (data, context) => {
+  const { code, state, redirectURI } = data;
+
+  const formBody = new URLSearchParams();
+  formBody.set("grant_type", "authorization_code");
+  formBody.set("code", code);
+  formBody.set("redirect_uri", redirectURI);
+
+  const opts = {
+    url: `${baseURI}/api/token`,
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Authorization:
+        "Basic " + new Buffer.from(clientId + ":" + clientSecret).toString("base64"),
+    },
+    data: formBody,
+  };
+
+  if (state !== spotifyState) {
+    throw new HttpsError(
+      "invalid-argument",
+      "States are not the same"
+    );
+  }
+
+  return spotifyAPICallsV2(context, opts);
+};
+
 exports.getAccessToken = functions.https.onCall(async (data, context) => {
   return await _getAccessToken(data, context);
+});
+
+exports.getAccessTokenV2 = onCall(async (data, context) => {
+  return await _getAccessTokenV2(data, context);
 });
 
 // Get refreshed access token
@@ -127,8 +212,34 @@ const _getRefreshedAccessToken = (data, context) => {
   return spotifyAPICalls(context, opts);
 };
 
+const _getRefreshedAccessTokenV2 = (data, context) => {
+  const { refreshToken, redirectURI } = data;
+
+  const formBody = new URLSearchParams();
+  formBody.set("grant_type", "refresh_token");
+  formBody.set("refresh_token", refreshToken);
+  formBody.set("redirect_uri", redirectURI);
+
+  const opts = {
+    url: `${baseURI}/api/token`,
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      Authorization:
+        "Basic " + new Buffer.from(clientId + ":" + clientSecret).toString("base64"),
+    },
+    data: formBody,
+  };
+
+  return spotifyAPICallsV2(context, opts);
+};
+
 exports.getRefreshedAccessToken = functions.https.onCall(async (data, context) => {
   return await _getRefreshedAccessToken(data, context);
+});
+
+exports.getRefreshedAccessTokenV2 = onCall(async (data, context) => {
+  return await _getRefreshedAccessTokenV2(data, context);
 });
 
 // Get Spotify Me
@@ -146,8 +257,26 @@ const _getMe = (data, context) => {
   return spotifyAPICalls(context, opts);
 };
 
+const _getMeV2 = (data, context) => {
+  const { access_token } = data;
+  const opts = {
+    url: `${apiURI}/me`,
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + access_token,
+    },
+  };
+
+  return spotifyAPICallsV2(context, opts);
+};
+
 exports.getMe = functions.https.onCall(async (data, context) => {
   return await _getMe(data, context);
+});
+
+exports.getMeV2 = onCall(async (data, context) => {
+  return await _getMeV2(data, context);
 });
 
 // Get all playlists
@@ -162,6 +291,19 @@ const getPlaylists = (user, access_token, uri, context) => {
   };
 
   return spotifyAPICalls(context, opts);
+};
+
+const getPlaylistsV2 = (user, access_token, uri, context) => {
+  const opts = {
+    url: uri || `${apiURI}/users/${user}/playlists?offset=0&limit=50`,
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + access_token,
+    },
+  };
+
+  return spotifyAPICallsV2(context, opts);
 };
 
 const _getAllPlaylists = async (data, context) => {
@@ -182,8 +324,30 @@ const _getAllPlaylists = async (data, context) => {
   return playlists;
 };
 
+const _getAllPlaylistsV2 = async (data, context) => {
+  const { user, access_token } = data;
+  const playlists = [];
+  let response = { next: "first" };
+
+  while (response.next) {
+    response = await getPlaylistsV2(
+      user,
+      access_token,
+      response.next === "first" ? null : response.next,
+      context
+    );
+    playlists.push(...response.items);
+  }
+
+  return playlists;
+};
+
 exports.getAllPlaylists = functions.https.onCall(async (data, context) => {
   return await _getAllPlaylists(data, context);
+});
+
+exports.getAllPlaylistsV2 = onCall(async (data, context) => {
+  return await _getAllPlaylistsV2(data, context);
 });
 
 // Get one playlist
@@ -201,8 +365,26 @@ const _getPlaylist = (data, context) => {
   return spotifyAPICalls(context, opts);
 };
 
+const _getPlaylistV2 = (data, context) => {
+  const { playlist_id, access_token } = data;
+  const opts = {
+    url: `${apiURI}/playlists/${playlist_id}`,
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + access_token,
+    },
+  };
+
+  return spotifyAPICallsV2(context, opts);
+};
+
 exports.getPlaylist = functions.https.onCall(async (data, context) => {
   return await _getPlaylist(data, context);
+});
+
+exports.getPlaylist = onCall(async (data, context) => {
+  return await _getPlaylistV2(data, context);
 });
 
 // Get songs from playlist
@@ -217,6 +399,19 @@ const getSongsFromPlaylist = (playlist_id, access_token, uri, context) => {
   };
 
   return spotifyAPICalls(context, opts);
+};
+
+const getSongsFromPlaylistV2 = (playlist_id, access_token, uri, context) => {
+  const opts = {
+    url: uri || `${apiURI}/playlists/${playlist_id}/tracks?limit=50`,
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + access_token,
+    },
+  };
+
+  return spotifyAPICallsV2(context, opts);
 };
 
 const _getAllSongsFromPlaylist = async (data, context) => {
@@ -238,8 +433,31 @@ const _getAllSongsFromPlaylist = async (data, context) => {
   return songs;
 };
 
+const _getAllSongsFromPlaylistV2 = async (data, context) => {
+  const { playlist_id, access_token } = data;
+  const songs = [];
+  let response = { next: "first" };
+
+  while (response.next) {
+    response = await getSongsFromPlaylistV2(
+      playlist_id,
+      access_token,
+      response.next === "first" ? null : response.next,
+      context
+    );
+
+    songs.push(...response.items);
+  }
+
+  return songs;
+};
+
 exports.getAllSongsFromPlaylist = functions.https.onCall(async (data, context) => {
   return await _getAllSongsFromPlaylist(data, context);
+});
+
+exports.getAllSongsFromPlaylistV2 = onCall(async (data, context) => {
+  return await _getAllSongsFromPlaylistV2(data, context);
 });
 
 // API call to delete songs from playlist
@@ -260,8 +478,27 @@ const _deleteSongsFromPlaylist = (data, context) => {
   return spotifyAPICalls(context, opts);
 };
 
+const _deleteSongsFromPlaylistV2 = (data, context) => {
+  const { playlist_id, access_token, tracks } = data;
+  const opts = {
+    url: `${apiURI}/playlists/${playlist_id}/tracks`,
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + access_token,
+    },
+    data: JSON.stringify(tracks),
+  };
+
+  return spotifyAPICallsV2(context, opts);
+};
+
 exports.deleteSongsFromPlaylist = functions.https.onCall(async (data, context) => {
   return await _deleteSongsFromPlaylist(data, context);
+});
+
+exports.deleteSongsFromPlaylistV2 = onCall(async (data, context) => {
+  return await _deleteSongsFromPlaylistV2(data, context);
 });
 
 // Delete (unfollow) a playlist
@@ -279,8 +516,26 @@ const _unfollowPlaylist = (data, context) => {
   return spotifyAPICalls(context, opts);
 };
 
+const _unfollowPlaylistV2 = (data, context) => {
+  const { playlist_id, access_token } = data;
+  const opts = {
+    url: `${apiURI}/playlists/${playlist_id}/followers`,
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + access_token,
+    },
+  };
+
+  return spotifyAPICallsV2(context, opts);
+};
+
 exports.unfollowPlaylist = functions.https.onCall(async (data, context) => {
   return await _unfollowPlaylist(data, context);
+});
+
+exports.unfollowPlaylistV2 = onCall(async (data, context) => {
+  return await _unfollowPlaylistV2(data, context);
 });
 
 // API call to create a new playlist for a specific user id
@@ -303,8 +558,31 @@ const _createPlaylist = (data, context) => {
   return spotifyAPICalls(context, opts);
 };
 
+const _createPlaylistV2 = (data, context) => {
+  const { user_id, access_token, name, description } = data;
+  const payload = {
+    name,
+    description,
+  };
+  const opts = {
+    url: `${apiURI}/users/${user_id}/playlists`,
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + access_token,
+    },
+    data: JSON.stringify(payload),
+  };
+
+  return spotifyAPICallsV2(context, opts);
+};
+
 exports.createPlaylist = functions.https.onCall(async (data, context) => {
   return await _createPlaylist(data, context);
+});
+
+exports.createPlaylist = onCall(async (data, context) => {
+  return await _createPlaylistV2(data, context);
 });
 
 // API call to add tracks to a playlist
@@ -328,8 +606,30 @@ const _addSongsToPlaylist = (data, context) => {
   return spotifyAPICalls(context, opts);
 };
 
+const _addSongsToPlaylistV2 = (data, context) => {
+  const { playlist_id, access_token, uris } = data;
+  const payload = {
+    uris,
+  };
+  const opts = {
+    url: `${apiURI}/playlists/${playlist_id}/tracks`,
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + access_token,
+    },
+    data: JSON.stringify(payload),
+  };
+
+  return spotifyAPICallsV2(context, opts);
+};
+
 exports.addSongsToPlaylist = functions.https.onCall(async (data, context) => {
   return await _addSongsToPlaylist(data, context);
+});
+
+exports.addSongsToPlaylistV2 = onCall(async (data, context) => {
+  return await _addSongsToPlaylistV2(data, context);
 });
 
 //END   -- SPOTIFY API CALLS & HELPER FUNCTIONS --
@@ -346,6 +646,23 @@ const retry = (maxRetries, fn, sleepTime = 1000, name = "") => {
     if (maxRetries <= 0) {
       console.log(error.message);
       throw new functions.https.HttpsError("unknown", error.message);
+    }
+
+    console.error("**ERROR**", error.message, JSON.stringify(error));
+    console.log(`*******waiting ${sleepTime / 1000}s before retrying*******`);
+    if (name !== "") console.log(`TRIES LEFT: ${maxRetries} for ${name}`);
+
+    await sleep(sleepTime);
+
+    return retry(maxRetries - 1, fn, sleepTime * 2);
+  });
+};
+
+const retryV2 = (maxRetries, fn, sleepTime = 1000, name = "") => {
+  return fn().catch(async (error) => {
+    if (maxRetries <= 0) {
+      console.log(error.message);
+      throw new HttpsError("unknown", error.message);
     }
 
     console.error("**ERROR**", error.message, JSON.stringify(error));
@@ -599,6 +916,205 @@ const _RefreshCombinedPlaylist = async (context, combo, firstRun = null) => {
   return null;
 };
 
+const _RefreshCombinedPlaylistV2 = async (context, combo, firstRun = null) => {
+  // number of times to retry API call if it fails
+  const retries = 5;
+
+  // pull user info
+  let user = await _fetchUserFromDb(combo.uid);
+  const uid = user.uid;
+
+  // Check if user has a refresh token, otherwise skip
+  if(!user.refresh_token) return null;
+
+  console.log(`SYNCHING ${combo.name} for ${uid}`);
+
+  // refresh token
+  console.log(`START REFRESHING ACCESS TOKEN for ${uid}`);
+  user = await retryV2(retries, () =>
+    _getRefreshedAccessTokenV2(
+      {
+        refreshToken: user.refresh_token,
+        redirectURI: redirectURI,
+      },
+      context
+    )
+  );
+  console.log(`END REFRESHING ACCESS TOKEN (${uid})`);
+
+  // check playlist still exists, else next
+  console.log(`START CHECKING PLAYLIST EXISTS (${uid}, ${combo.id})`);
+  const playlist = await retry(retries, () =>
+    _getPlaylistV2(
+      {
+        playlist_id: combo.id,
+        access_token: user.access_token,
+      },
+      context
+    )
+  );
+  console.log(`END CHECKING PLAYLIST EXISTS (${uid}, ${combo.id}, ${!!playlist})`);
+
+  if (!playlist) return;
+
+  // check if underlying playlists have changed since last refresh
+  console.log(`START CHECK PLAYLIST CHANGES (${uid}, ${combo.id})`);
+  let refresh = false;
+  const newPlaylists = [];
+
+  if (!firstRun) {
+    for (const playlist of combo.playlists) {
+      const spotifyPlaylist = await retry(retries, () =>
+        _getPlaylistV2(
+          {
+            playlist_id: playlist.id,
+            access_token: user.access_token,
+          },
+          context
+        )
+      );
+
+      console.log({
+        spotSnap: spotifyPlaylist.snapshot_id,
+        dbSnap: playlist.snapshotId,
+        same: spotifyPlaylist.snapshot_id === playlist.snapshotId,
+      });
+
+      if (spotifyPlaylist.snapshot_id !== playlist.snapshotId) {
+        refresh = true;
+      }
+
+      newPlaylists.push({
+        id: spotifyPlaylist.id,
+        name: spotifyPlaylist.name,
+        snapshotId: spotifyPlaylist.snapshot_id,
+      });
+    }
+
+    if (!refresh) return;
+  }
+
+  console.log(`END CHECK PLAYLIST CHANGES (${uid}, ${combo.id}, ${refresh})`);
+
+  // get all songs in combined playlist
+  console.log(`START FETCH ALL SONGS FROM COMBO (${uid}, ${combo.id})`);
+  const tracks = await retryV2(retries, () =>
+    _getAllSongsFromPlaylistV2(
+      {
+        playlist_id: combo.id,
+        access_token: user.access_token,
+      },
+      context
+    )
+  );
+  const tracksURI = tracks.map((track) => {
+    if(!track.track) console.log(JSON.stringify(track));
+
+    return {
+      uri: track.track?.uri || null,  
+    }
+  });
+  const tracksURIFiltered = tracksURI.filter((track) => !!track.uri);
+  console.log(`END FETCH ALL SONGS FROM COMBO (${uid}, ${combo.id})`);
+
+  // remove all songs in combined playlist
+  console.log(
+    `START REMOVING ${tracksURIFiltered.length} tracks in ${combo.name} (${uid}, ${combo.id})`
+  );
+  while (tracksURIFiltered.length > 0) {
+    const deleteResponse = await retry(retries, () =>
+      _deleteSongsFromPlaylistV2(
+        {
+          playlist_id: combo.id,
+          access_token: user.access_token,
+          tracks: {
+            tracks: tracksURIFiltered.slice(0, 100),
+          },
+        },
+        context
+      )
+    );
+
+    // only remove tracks if delete was successful
+    tracksURIFiltered.splice(0, 100);
+  }
+  console.log(`END REMOVING tracks in ${combo.name} (${uid}, ${combo.id})`);
+
+  // loop through playlists
+  console.log(
+    `START FETCH SONGS PLAYLISTS (${uid}, ${combo.id}, ${combo.playlists.length})`
+  );
+  const tracksToAdd = [];
+  for (const playlist of combo.playlists) {
+    // get all songs from playlist, add to array
+    console.log(`GETTING TRACKS FOR PLAYLIST ${playlist.name} (${playlist.id})`);;
+    const tracks = await retryV2(retries, () =>
+      _getAllSongsFromPlaylistV2(
+        {
+          playlist_id: playlist.id,
+          access_token: user.access_token,
+        },
+        context
+      )
+    );
+
+    console.log('PULLED TRACKS');
+    const tracksNotLocal = tracks
+      .filter((track) => {
+        if (!(!!track && !!track.track && !track.track.is_local)) {
+          console.log(`Track: ${JSON.stringify(track)}`);
+        }
+        return !!track && !!track.track && !track.track.is_local;
+      })
+      .map((track) => track.track.uri);
+    tracksToAdd.push(...tracksNotLocal);
+
+    console.log(`BUFFERING ${tracksNotLocal.length} from ${playlist.name}`);
+  }
+  console.log(
+    `END FETCH SONGS PLAYLISTS (${uid}, ${combo.id}, ${combo.playlists.length})`
+  );
+
+  // Check if tracks to add is above 10k, if so, exit early
+  if (tracksToAdd.length > SPOTIFY_PLAYLIST_LIMIT) {
+    console.log(
+      `Cannot create ${combo.name} as it has too many songs. (${tracksToAdd.length}; limit ${SPOTIFY_PLAYLIST_LIMIT})`
+    );
+    return;
+  }
+
+  // remove duplicates?
+
+  // add all songs to combined playlist
+  console.log(
+    `START ADDING ${tracksToAdd.length} tracks to ${combo.name} (${uid}, ${combo.id})`
+  );
+  while (tracksToAdd.length > 0) {
+    const addResponse = await retryV2(retries, () =>
+      _addSongsToPlaylistV2(
+        {
+          playlist_id: combo.id,
+          access_token: user.access_token,
+          uris: tracksToAdd.slice(0, 100),
+        },
+        context
+      )
+    );
+
+    // only remove from tracksToAdd if add was successful
+    tracksToAdd.splice(0, 100);
+  }
+
+  // update playlists in DB with new snapshot id
+  if (refresh) await _updatePlaylistsInDb(combo.id, newPlaylists);
+
+  console.log(`END ADDING tracks to ${combo.name} (${uid}, ${combo.id})`);
+  console.log(`DONE combining for ${combo.name}`);
+  console.log(`**********************************************************`);
+
+  return null;
+};
+
 exports.adminRefreshAllCombinedPlaylists = functions
   .runWith({ timeoutSeconds: 540, memory: "2GB" })
   .https.onCall(async (data, context) => {
@@ -627,9 +1143,35 @@ exports.adminRefreshAllCombinedPlaylists = functions
     return null;
   });
 
+exports.adminRefreshAllCombinedPlaylistsV2 = onCall({ timeoutSeconds: 1200, memory: "256MB" }, async (data, context) => {
+    if (await checkUserIsAdmin(context)) {
+      // fetch all combined playlists
+      const combinedPlaylists = await _fetchAllCombinedPlaylistsFromDb();
+      console.log(`BEGIN REFRESH FOR ${combinedPlaylists.length} combos`);
+      return new Promise(async (resolve, reject) => {
+        try {
+          for (const combo of combinedPlaylists) {
+            await retryV2(
+              3,
+              () => _RefreshCombinedPlaylistV2(context, combo),
+              3000,
+              combo.name
+            );
+          }
+
+          return resolve("Synch Finished");
+        } catch (error) {
+          return reject(error.message);
+        }
+      });
+    }
+
+    return null;
+  });
+
 exports.scheduledAdminRefreshAllCombinedPlaylists = functions
   .runWith({ timeoutSeconds: 540, memory: "2GB" })
-  .pubsub.schedule("every 6 hours")
+  .pubsub.schedule("every 12 hours")
   .onRun(async (context) => {
     console.log("*** Scheduled run of Admin Refresh all ***");
 
@@ -643,6 +1185,31 @@ exports.scheduledAdminRefreshAllCombinedPlaylists = functions
           await retry(
             3,
             () => _RefreshCombinedPlaylist(context, combo),
+            3000,
+            combo.name
+          );
+        }
+
+        return resolve("Synch Finished");
+      } catch (error) {
+        return reject(error.message);
+      }
+    });
+  });
+
+exports.scheduledAdminRefreshAllCombinedPlaylistsV2 = onRun({ timeoutSeconds: 1200, memory: "256MB" }, async (context) => {
+    console.log("*** Scheduled run of Admin Refresh all ***");
+
+    // fetch all combined playlists
+    const combinedPlaylists = await _fetchAllCombinedPlaylistsFromDb();
+
+    console.log(`BEGIN REFRESH FOR ${combinedPlaylists.length} combos`);
+    return new Promise(async (resolve, reject) => {
+      try {
+        for (const combo of combinedPlaylists) {
+          await retryV2(
+            3,
+            () => _RefreshCombinedPlaylistV2(context, combo),
             3000,
             combo.name
           );
@@ -678,8 +1245,60 @@ exports.refreshNewCombinedPlaylist = functions
     }
   });
 
+exports.refreshNewCombinedPlaylistV2 = onCall({ timeoutSeconds: 90 }, async (data, context) => {
+    const { combo } = data;
+
+    if (checkUserLoggedInV2(context) && checkUserIsSelfV2(context, combo.uid)) {
+      return new Promise(async (resolve, reject) => {
+        try {
+          await retryV2(
+            3,
+            () => _RefreshCombinedPlaylistV2(context, combo, true),
+            3000,
+            combo.name
+          );
+
+          return resolve("Synch Finished");
+        } catch (error) {
+          return reject(error.message);
+        }
+      });
+    }
+  });
+
 exports.backupCombinedPlaylists = functions.https.onCall(async (data, context) => {
   if (await checkUserIsAdmin(context)) {
+    const fetchCollection = "combined_playlists";
+    const backupCollection = "combined_playlists_backup";
+    return new Promise(async (resolve, reject) => {
+      try {
+        const combinedPlaylists = await _fetchAllCombinedPlaylistsFromDb(
+          fetchCollection
+        );
+
+        for (const combo of combinedPlaylists) {
+          console.log(`BACKING UP ${combo.name} (${combo.id}) for ${combo.uid} [${backupCollection} ${combo.id}]`);
+          await _createCombinedPlaylistInDb(
+            backupCollection,
+            combo.url ?? "",
+            combo.id,
+            combo.uid,
+            combo.name,
+            combo.playlists
+          );
+        }
+
+        return resolve("Combined playlists backed up");
+      } catch (error) {
+        return reject(error.message);
+      }
+    });
+  }
+  return null;
+});
+
+exports.backupCombinedPlaylistsV2 = onCall(async (data, context) => {
+  if (await checkUserIsAdminV2(context)) {
     const fetchCollection = "combined_playlists";
     const backupCollection = "combined_playlists_backup";
     return new Promise(async (resolve, reject) => {

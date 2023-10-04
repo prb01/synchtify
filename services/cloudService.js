@@ -67,7 +67,7 @@ async function addSongsToPlaylist(playlist_id, access_token, uris) {
 }
 
 async function adminRefreshAllCombinedPlaylists() {
-  return cloudAPICall("adminRefreshAllCombinedPlaylists");
+  return cloudAPICall("adminRefreshAllCombinedPlaylistsV2");
 }
 
 async function refreshNewCombinedPlaylist(combo) {
