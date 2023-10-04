@@ -5,7 +5,7 @@ import { getFunctions, httpsCallable, connectFunctionsEmulator } from 'firebase/
 const functions = getFunctions(app);
 connectFunctionsEmulator(functions, "127.0.0.1", 5001);
 
-async function cloudAPICall(cloudFunction, payload) {
+async function cloudAPICall(cloudFunction, payload = {}) : Promise<any> {
   try {
     const _functionCall = httpsCallable(functions, cloudFunction);
     const { data } = await _functionCall(payload);
@@ -15,31 +15,31 @@ async function cloudAPICall(cloudFunction, payload) {
   }
 }
 
-async function getAccessToken(code, state, redirectURI) {
+async function getAccessToken(code, state, redirectURI) : Promise<any> {
   return cloudAPICall("getAccessToken", { code, state, redirectURI });
 }
 
-async function getRefreshedAccessToken(refreshToken, redirectURI) {
+async function getRefreshedAccessToken(refreshToken, redirectURI) : Promise<any> {
   return cloudAPICall("getRefreshedAccessToken", { refreshToken, redirectURI });
 }
 
-async function getMe(access_token) {
+async function getMe(access_token) : Promise<any> {
   return cloudAPICall("getMeV2", { access_token });
 }
 
-async function getAllPlaylists(user, access_token) {
+async function getAllPlaylists(user, access_token) : Promise<any> {
   return cloudAPICall("getAllPlaylists", { user, access_token });
 }
 
-async function getPlaylist(playlist_id, access_token) {
+async function getPlaylist(playlist_id, access_token) : Promise<any> {
   return cloudAPICall("getPlaylist", { playlist_id, access_token });
 }
 
-async function getAllSongsFromPlaylist(playlist_id, access_token) {
+async function getAllSongsFromPlaylist(playlist_id, access_token) : Promise<any> {
   return cloudAPICall("getAllSongsFromPlaylist", { playlist_id, access_token });
 }
 
-async function deleteSongsFromPlaylist(playlist_id, access_token, tracks) {
+async function deleteSongsFromPlaylist(playlist_id, access_token, tracks) : Promise<any> {
   return cloudAPICall("deleteSongsFromPlaylist", {
     playlist_id,
     access_token,
@@ -47,7 +47,7 @@ async function deleteSongsFromPlaylist(playlist_id, access_token, tracks) {
   });
 }
 
-async function unfollowPlaylist(playlist_id, access_token) {
+async function unfollowPlaylist(playlist_id, access_token) : Promise<any> {
   return cloudAPICall("unfollowPlaylist", { playlist_id, access_token });
 }
 
@@ -56,7 +56,7 @@ async function createPlaylist(
   access_token,
   name,
   description = "Combined playlist made with Synchtify (synchtify.prb01.com)"
-) {
+) : Promise<any> {
   return cloudAPICall("createPlaylist", {
     user_id,
     access_token,
@@ -65,19 +65,19 @@ async function createPlaylist(
   });
 }
 
-async function addSongsToPlaylist(playlist_id, access_token, uris) {
+async function addSongsToPlaylist(playlist_id, access_token, uris) : Promise<any> {
   return cloudAPICall("addSongsToPlaylist", { playlist_id, access_token, uris });
 }
 
-async function adminRefreshAllCombinedPlaylists() {
+async function adminRefreshAllCombinedPlaylists() : Promise<any> {
   return cloudAPICall("adminRefreshAllCombinedPlaylistsV2");
 }
 
-async function refreshNewCombinedPlaylist(combo) {
+async function refreshNewCombinedPlaylist(combo) : Promise<any> {
   return cloudAPICall("refreshNewCombinedPlaylist", { combo });
 }
 
-async function backupCombinedPlaylists() {
+async function backupCombinedPlaylists() : Promise<any> {
   return cloudAPICall("backupCombinedPlaylists");
 }
 
