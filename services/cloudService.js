@@ -1,7 +1,7 @@
 // import firebase from "firebase/app";
 import firebase from "../lib/firebase";
 require("firebase/functions");
-firebase.functions().useEmulator("localhost", 5001);
+// firebase.functions().useEmulator("localhost", 5001);
 
 async function cloudAPICall(cloudFunction, payload) {
   try {

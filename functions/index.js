@@ -281,7 +281,7 @@ exports.getMe = functions.https.onCall(async (data, context) => {
   return await _getMe(data, context);
 });
 
-exports.getMeV2 = onCall({ cors: true }, async (request) => {
+exports.getMeV2 = onCall(async (request) => {
     return await _getMeV2(request);
 });
 
