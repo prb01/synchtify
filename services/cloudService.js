@@ -21,7 +21,7 @@ async function getRefreshedAccessToken(refreshToken, redirectURI) {
 }
 
 async function getMe(access_token) {
-  return cloudAPICall("getMe", { access_token });
+  return cloudAPICall("getMeV2", { access_token });
 }
 
 async function getAllPlaylists(user, access_token) {

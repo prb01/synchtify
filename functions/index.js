@@ -1,8 +1,14 @@
 const axios = require("axios").default;
 const functions = require("firebase-functions");
 const {HttpsError, onCall, onRun} = require("firebase-functions/v2/https");
+const {onSchedule} = require("firebase-functions/v2/scheduler");
 const admin = require("firebase-admin");
-admin.initializeApp();
+// admin.initializeApp();
+
+const { initializeApp } = require('firebase-admin/app');
+const { getFirestore, FieldValue } = require('firebase-admin/firestore');
+initializeApp();
+const db = getFirestore();
 
 const clientId = process.env.REACT_APP_SPOTIFY_CLIENT_ID;
 const clientSecret = process.env.REACT_APP_SPOTIFY_CLIENT_SECRET;
@@ -64,7 +70,7 @@ const checkUserIsAdmin = async (context) => {
 };
 
 const checkUserIsAdminV2 = async (context) => {
-  const user = await _fetchUserFromDb(context.auth.uid);
+  const user = await _fetchUserFromDbV2(context.auth.uid);
 
   if (!user.admin) {
     throw new HttpsError(
@@ -100,8 +106,8 @@ const spotifyAPICalls = async (context, opts) => {
   return null;
 };
 
-const spotifyAPICallsV2 = async (context, opts) => {
-  if (checkUserLoggedInV2(context)) {
+const spotifyAPICallsV2 = async (request, opts) => {
+  if (checkUserLoggedInV2(request)) {
     try {
       const response = await axios({ ...opts, timeout: 10000 });
       return response.data;
@@ -257,8 +263,8 @@ const _getMe = (data, context) => {
   return spotifyAPICalls(context, opts);
 };
 
-const _getMeV2 = (data, context) => {
-  const { access_token } = data;
+const _getMeV2 = (request) => {
+  const { access_token } = request;
   const opts = {
     url: `${apiURI}/me`,
     method: "GET",
@@ -268,15 +274,15 @@ const _getMeV2 = (data, context) => {
     },
   };
 
-  return spotifyAPICallsV2(context, opts);
+  return spotifyAPICallsV2(request, opts);
 };
 
 exports.getMe = functions.https.onCall(async (data, context) => {
   return await _getMe(data, context);
 });
 
-exports.getMeV2 = onCall(async (data, context) => {
-  return await _getMeV2(data, context);
+exports.getMeV2 = onCall(async (request) => {
+  return await _getMeV2(request);
 });
 
 // Get all playlists
@@ -383,7 +389,7 @@ exports.getPlaylist = functions.https.onCall(async (data, context) => {
   return await _getPlaylist(data, context);
 });
 
-exports.getPlaylist = onCall(async (data, context) => {
+exports.getPlaylistV2 = onCall(async (data, context) => {
   return await _getPlaylistV2(data, context);
 });
 
@@ -581,7 +587,7 @@ exports.createPlaylist = functions.https.onCall(async (data, context) => {
   return await _createPlaylist(data, context);
 });
 
-exports.createPlaylist = onCall(async (data, context) => {
+exports.createPlaylistV2 = onCall(async (data, context) => {
   return await _createPlaylistV2(data, context);
 });
 
@@ -683,6 +689,14 @@ const _fetchAllCombinedPlaylistsFromDb = async (
   return data;
 };
 
+const _fetchAllCombinedPlaylistsFromDbV2 = async (
+  collection = "combined_playlists"
+) => {
+  const snapshot = await db.collection(collection).get();
+  const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  return data;
+};
+
 const _fetchUserFromDb = async (uid) => {
   const snapshot = await admin
     .firestore()
@@ -690,6 +704,16 @@ const _fetchUserFromDb = async (uid) => {
     .where("uid", "==", uid)
     .get();
   const data = snapshot.docs[0] ? { ...snapshot.docs[0].data() } : null;
+  return data;
+};
+
+const _fetchUserFromDbV2 = async (uid) => {
+  const snapshot = await db
+    .collection("users")
+    .where("uid", "==", uid)
+    .get();
+  const data = snapshot.docs[0] ? { ...snapshot.docs[0].data() } : null;
+  console.log("_fetchUserFromDbV2", data);
   return data;
 };
 
@@ -703,6 +727,16 @@ const _updatePlaylistsInDb = async (id, playlists) => {
   return doc;
 };
 
+const _updatePlaylistsInDbV2 = async (id, playlists) => {
+  const doc = await admin
+    .firestore()
+    .collection("combined_playlists")
+    .doc(id)
+    .update({ updatedAt: FieldValue.serverTimestamp(), playlists });
+
+  return doc;
+};
+
 const _createCombinedPlaylistInDb = async (collection, url, id, uid, name, playlists) => {
   try {
     await admin.firestore().collection(collection).doc(id).set({
@@ -711,6 +745,20 @@ const _createCombinedPlaylistInDb = async (collection, url, id, uid, name, playl
       name,
       playlists,
       updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const _createCombinedPlaylistInDbV2 = async (collection, url, id, uid, name, playlists) => {
+  try {
+    await db.collection(collection).doc(id).set({
+      uid,
+      url,
+      name,
+      playlists,
+      updatedAt: FieldValue.serverTimestamp(),
     });
   } catch (error) {
     console.log(error);
@@ -921,7 +969,7 @@ const _RefreshCombinedPlaylistV2 = async (context, combo, firstRun = null) => {
   const retries = 5;
 
   // pull user info
-  let user = await _fetchUserFromDb(combo.uid);
+  let user = await _fetchUserFromDbV2(combo.uid);
   const uid = user.uid;
 
   // Check if user has a refresh token, otherwise skip
@@ -1106,7 +1154,7 @@ const _RefreshCombinedPlaylistV2 = async (context, combo, firstRun = null) => {
   }
 
   // update playlists in DB with new snapshot id
-  if (refresh) await _updatePlaylistsInDb(combo.id, newPlaylists);
+  if (refresh) await _updatePlaylistsInDbV2(combo.id, newPlaylists);
 
   console.log(`END ADDING tracks to ${combo.name} (${uid}, ${combo.id})`);
   console.log(`DONE combining for ${combo.name}`);
@@ -1143,17 +1191,17 @@ exports.adminRefreshAllCombinedPlaylists = functions
     return null;
   });
 
-exports.adminRefreshAllCombinedPlaylistsV2 = onCall({ timeoutSeconds: 1200, memory: "256MB" }, async (data, context) => {
-    if (await checkUserIsAdmin(context)) {
+exports.adminRefreshAllCombinedPlaylistsV2 = onCall({ cors: true, timeoutSeconds: 1200, memory: "256MB" }, async (request) => {
+    if (await checkUserIsAdminV2(request)) {
       // fetch all combined playlists
-      const combinedPlaylists = await _fetchAllCombinedPlaylistsFromDb();
+      const combinedPlaylists = await _fetchAllCombinedPlaylistsFromDbV2();
       console.log(`BEGIN REFRESH FOR ${combinedPlaylists.length} combos`);
       return new Promise(async (resolve, reject) => {
         try {
           for (const combo of combinedPlaylists) {
             await retryV2(
               3,
-              () => _RefreshCombinedPlaylistV2(context, combo),
+              () => _RefreshCombinedPlaylistV2(request, combo),
               3000,
               combo.name
             );
@@ -1169,39 +1217,39 @@ exports.adminRefreshAllCombinedPlaylistsV2 = onCall({ timeoutSeconds: 1200, memo
     return null;
   });
 
-exports.scheduledAdminRefreshAllCombinedPlaylists = functions
-  .runWith({ timeoutSeconds: 540, memory: "2GB" })
-  .pubsub.schedule("every 12 hours")
-  .onRun(async (context) => {
+// exports.scheduledAdminRefreshAllCombinedPlaylists = functions
+//   .runWith({ timeoutSeconds: 540, memory: "2GB" })
+//   .pubsub.schedule("every 12 hours")
+//   .onRun(async (context) => {
+//     console.log("*** Scheduled run of Admin Refresh all ***");
+
+//     // fetch all combined playlists
+//     const combinedPlaylists = await _fetchAllCombinedPlaylistsFromDb();
+
+//     console.log(`BEGIN REFRESH FOR ${combinedPlaylists.length} combos`);
+//     return new Promise(async (resolve, reject) => {
+//       try {
+//         for (const combo of combinedPlaylists) {
+//           await retry(
+//             3,
+//             () => _RefreshCombinedPlaylist(context, combo),
+//             3000,
+//             combo.name
+//           );
+//         }
+
+//         return resolve("Synch Finished");
+//       } catch (error) {
+//         return reject(error.message);
+//       }
+//     });
+//   });
+
+exports.scheduledAdminRefreshAllCombinedPlaylistsV2 = onSchedule({ schedule: "every 12 hours", timeoutSeconds: 1200, memory: "256MB" }, async (context) => {
     console.log("*** Scheduled run of Admin Refresh all ***");
 
     // fetch all combined playlists
-    const combinedPlaylists = await _fetchAllCombinedPlaylistsFromDb();
-
-    console.log(`BEGIN REFRESH FOR ${combinedPlaylists.length} combos`);
-    return new Promise(async (resolve, reject) => {
-      try {
-        for (const combo of combinedPlaylists) {
-          await retry(
-            3,
-            () => _RefreshCombinedPlaylist(context, combo),
-            3000,
-            combo.name
-          );
-        }
-
-        return resolve("Synch Finished");
-      } catch (error) {
-        return reject(error.message);
-      }
-    });
-  });
-
-exports.scheduledAdminRefreshAllCombinedPlaylistsV2 = onRun({ timeoutSeconds: 1200, memory: "256MB" }, async (context) => {
-    console.log("*** Scheduled run of Admin Refresh all ***");
-
-    // fetch all combined playlists
-    const combinedPlaylists = await _fetchAllCombinedPlaylistsFromDb();
+    const combinedPlaylists = await _fetchAllCombinedPlaylistsFromDbV2();
 
     console.log(`BEGIN REFRESH FOR ${combinedPlaylists.length} combos`);
     return new Promise(async (resolve, reject) => {
@@ -1303,13 +1351,13 @@ exports.backupCombinedPlaylistsV2 = onCall(async (data, context) => {
     const backupCollection = "combined_playlists_backup";
     return new Promise(async (resolve, reject) => {
       try {
-        const combinedPlaylists = await _fetchAllCombinedPlaylistsFromDb(
+        const combinedPlaylists = await _fetchAllCombinedPlaylistsFromDbV2(
           fetchCollection
         );
 
         for (const combo of combinedPlaylists) {
           console.log(`BACKING UP ${combo.name} (${combo.id}) for ${combo.uid} [${backupCollection} ${combo.id}]`);
-          await _createCombinedPlaylistInDb(
+          await _createCombinedPlaylistInDbV2(
             backupCollection,
             combo.url ?? "",
             combo.id,
