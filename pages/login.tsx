@@ -7,9 +7,12 @@ import StyledFirebaseAuth from "react-firebaseui/StyledFirebaseAuth";
 import { useRouter } from "next/router";
 import Script from "next/script";
 import { useAuth } from "../context/Auth";
-import firebase from "../lib/firebase";
+import app from "../lib/firebase";
+import { getAuth, signInWithPopup, GoogleAuthProvider, FacebookAuthProvider, EmailAuthProvider } from "firebase/auth";
 import CommonHead from "../components/CommonHead";
 import Head from "next/head";
+
+const auth = getAuth(app);
 
 const componentLoginFroms = {
   login: LoginForm,
@@ -75,7 +78,7 @@ function LoginForm({ setForm }) {
 
   const handleLogin = async (provider) => {
     try {
-      return await firebase.auth().signInWithPopup(provider);
+      return await signInWithPopup(auth, provider);
     } catch (error) {
       console.error(error);
       alert(error);
@@ -83,12 +86,12 @@ function LoginForm({ setForm }) {
   };
 
   const handleGoogleLogin = () => {
-    const googleProvider = new firebase.auth.GoogleAuthProvider();
+    const googleProvider = new GoogleAuthProvider();
     return handleLogin(googleProvider);
   };
 
   const handleFacebookLogin = () => {
-    const facebookProvider = new firebase.auth.FacebookAuthProvider();
+    const facebookProvider = new FacebookAuthProvider();
     return handleLogin(facebookProvider);
   };
 
@@ -177,7 +180,7 @@ function EmailLogin({ setForm }) {
     signInFlow: "popup",
     // Redirect to /signedIn after sign in is successful. Alternatively you can provide a callbacks.signInSuccess function.
     signInSuccessUrl: "/dashboard",
-    signInOptions: [firebase.auth.EmailAuthProvider.PROVIDER_ID],
+    signInOptions: [EmailAuthProvider.PROVIDER_ID],
   };
 
   console.log("IN HERE");
@@ -194,7 +197,7 @@ function EmailLogin({ setForm }) {
         </Col>
         <Col className="ms-2 text-start text-white">Return</Col>
       </Button>
-      <StyledFirebaseAuth uiConfig={uiConfig} firebaseAuth={firebase.auth()} />
+      <StyledFirebaseAuth uiConfig={uiConfig} firebaseAuth={auth} />
     </div>
   );
 }
