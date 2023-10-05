@@ -1,6 +1,6 @@
 import app from "../lib/firebase";
 import { getFunctions, httpsCallable, connectFunctionsEmulator } from 'firebase/functions';
-const functions = getFunctions(app);
+const functions = getFunctions(app, "us-central1");
 // connectFunctionsEmulator(functions, "127.0.0.1", 5001);
 
 async function cloudAPICall(cloudFunction, payload = {}) : Promise<any> {
@@ -22,11 +22,11 @@ async function getRefreshedAccessToken(refreshToken, redirectURI) : Promise<any>
 }
 
 async function getMe(access_token) : Promise<any> {
-  return cloudAPICall("getMe", { access_token });
+  return cloudAPICall("getMeV2", { access_token });
 }
 
 async function getAllPlaylists(user, access_token) : Promise<any> {
-  return cloudAPICall("getAllPlaylists", { user, access_token });
+  return cloudAPICall("getAllPlaylistsV2", { user, access_token });
 }
 
 async function getPlaylist(playlist_id, access_token) : Promise<any> {

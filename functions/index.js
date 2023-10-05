@@ -1,14 +1,19 @@
 const axios = require("axios").default;
 const functions = require("firebase-functions");
 const {HttpsError, onCall, onRun} = require("firebase-functions/v2/https");
+const { log } = require("firebase-functions/logger");
 const {onSchedule} = require("firebase-functions/v2/scheduler");
+require("firebase-functions/logger/compat");
+const { setGlobalOptions } = require('firebase-functions/v2')
 const admin = require("firebase-admin");
 // admin.initializeApp();
 
 const { initializeApp } = require('firebase-admin/app');
 const { getFirestore, FieldValue } = require('firebase-admin/firestore');
+
 initializeApp();
 const db = getFirestore();
+setGlobalOptions({ region: "us-central1" })
 
 const clientId = process.env.REACT_APP_SPOTIFY_CLIENT_ID;
 const clientSecret = process.env.REACT_APP_SPOTIFY_CLIENT_SECRET;
@@ -16,6 +21,7 @@ const spotifyState = process.env.REACT_APP_SPOTIFY_STATE;
 const baseURI = "https://accounts.spotify.com";
 const apiURI = "https://api.spotify.com/v1";
 const redirectURI = `https://synchtify.prb01.com/dashboard`;
+const corsAllowed = [/synchtify\.com$/, /localhost:3000$/];
 
 const SPOTIFY_PLAYLIST_LIMIT = 10000;
 
@@ -98,7 +104,7 @@ const spotifyAPICalls = async (context, opts) => {
         throw new functions.https.HttpsError("unavailable", "No response received.");
       } else {
         // Something happened in setting up the request that triggered an Error
-        throw new functions.https.HttpsError(error.status, error.message);
+        throw new functions.https.HttpsError("unknown", error.message);
       }
     }
   }
@@ -107,6 +113,8 @@ const spotifyAPICalls = async (context, opts) => {
 };
 
 const spotifyAPICallsV2 = async (request, opts) => {
+  console.log("spotifyAPICallsV2", request, opts);
+  log({ request, opts });
   if (checkUserLoggedInV2(request)) {
     try {
       const response = await axios({ ...opts, timeout: 10000 });
@@ -120,7 +128,7 @@ const spotifyAPICallsV2 = async (request, opts) => {
         throw new HttpsError("unavailable", "No response received.");
       } else {
         // Something happened in setting up the request that triggered an Error
-        throw new HttpsError(error.status, error.message);
+        throw new HttpsError("unknown", error.message);
       }
     }
   }
@@ -281,7 +289,7 @@ exports.getMe = functions.https.onCall(async (data, context) => {
   return await _getMe(data, context);
 });
 
-exports.getMeV2 = onCall(async (request) => {
+exports.getMeV2 = onCall({ cors: corsAllowed }, async (request) => {
     return await _getMeV2(request);
 });
 
@@ -330,8 +338,8 @@ const _getAllPlaylists = async (data, context) => {
   return playlists;
 };
 
-const _getAllPlaylistsV2 = async (data, context) => {
-  const { user, access_token } = data;
+const _getAllPlaylistsV2 = async (request) => {
+  const { user, access_token } = request.data;
   const playlists = [];
   let response = { next: "first" };
 
@@ -340,7 +348,7 @@ const _getAllPlaylistsV2 = async (data, context) => {
       user,
       access_token,
       response.next === "first" ? null : response.next,
-      context
+      request
     );
     playlists.push(...response.items);
   }
