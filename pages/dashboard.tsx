@@ -17,6 +17,7 @@ import { addSpotifyAuth, updateSpotifyAuth } from "../redux/user";
 import { fetchCombinedPlaylistsByUid } from "../redux/combinedPlaylist";
 import { fetchSpotifyPlaylists } from "../redux/playlist";
 import { fetchSpotifyMe } from "../redux/spotifyUser";
+import KofiWidget from "../components/KofiWidget";
 
 const Dashboard = () => {
   const { isLoading, isAuthenticated } = useAuth();
@@ -32,6 +33,17 @@ const Dashboard = () => {
   const handleConnectSpotify = () => {
     spotifyLogin();
   };
+
+  const kofiDonate = `
+  <script>
+    kofiWidgetOverlay.draw('prb01', {
+      'type': 'floating-chat',
+      'floating-chat.donateButton.text': 'Support Me',
+      'floating-chat.donateButton.background-color': '#00bfa5',
+      'floating-chat.donateButton.text-color': '#fff'
+    });
+  </script>
+  `;
 
   useEffect(() => {
     // if not authenticated, navigate to login
@@ -126,6 +138,9 @@ const Dashboard = () => {
       <CommonHead />
       <Head>
         <title key="title">Synchtify | Dashboard</title>
+        <Head>
+          <script src='https://storage.ko-fi.com/cdn/scripts/overlay-widget.js'></script>
+        </Head>
       </Head>
 
       <div className="vw-100 h-100 min-vh-100 d-flex flex-column align-items-center p-2 pt-5 text-text">
@@ -183,6 +198,7 @@ const Dashboard = () => {
           </>
         )}
       </div>
+      <KofiWidget />
     </>
   );
 };
