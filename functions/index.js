@@ -1,21 +1,30 @@
-const axios = require("axios").default;
-const functions = require("firebase-functions");
-const {HttpsError, onCall} = require("firebase-functions/v2/https");
-const { log } = require("firebase-functions/logger");
-const { onSchedule } = require("firebase-functions/v2/scheduler");
-require("firebase-functions/logger/compat");
-const { setGlobalOptions } = require('firebase-functions/v2')
-const admin = require("firebase-admin");
+import { default as axios } from "axios";
+// const axios = require("axios").default;
+import functions from "firebase-functions";
+// const functions = require("firebase-functions");
+import { HttpsError, onCall } from "firebase-functions/v2/https";
+// const {HttpsError, onCall} = require("firebase-functions/v2/https");
+import { log, error as errorLog } from "firebase-functions/logger";
+// const { log, error: errorLog } = require("firebase-functions/logger");
+import { onSchedule } from "firebase-functions/v2/scheduler";
+// const { onSchedule } = require("firebase-functions/v2/scheduler");
+import "firebase-functions/logger/compat";
+// require("firebase-functions/logger/compat");
+import { setGlobalOptions } from "firebase-functions/v2";
+// const { setGlobalOptions } = require('firebase-functions/v2')
+import admin from "firebase-admin";
+// const admin = require("firebase-admin");
 admin.initializeApp();
 
-const { getFirestore, collection, query, where, doc, getDocs, setDoc, deleteDoc, serverTimestamp, FieldValue } = require('firebase-admin/firestore');
+import { getFirestore } from "firebase-admin/firestore";
+// const { getFirestore, collection, query, where, doc, getDocs, setDoc, deleteDoc, serverTimestamp, FieldValue } = require('firebase-admin/firestore');
 
 const db = getFirestore();
 setGlobalOptions({ region: "us-central1" })
 
-const clientId = process.env.REACT_APP_SPOTIFY_CLIENT_ID;
-const clientSecret = process.env.REACT_APP_SPOTIFY_CLIENT_SECRET;
-const spotifyState = process.env.REACT_APP_SPOTIFY_STATE;
+const clientId = process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_ID;
+const clientSecret = process.env.SPOTIFY_CLIENT_SECRET;
+const spotifyState = process.env.NEXT_PUBLIC_SPOTIFY_STATE;
 const baseURI = "https://accounts.spotify.com";
 const apiURI = "https://api.spotify.com/v1";
 const redirectURI = `https://synchtify.prb01.com/dashboard`;
@@ -90,6 +99,7 @@ const checkUserIsAdminV2 = async (context) => {
 
 // Helper call to handle errors
 const spotifyAPICalls = async (context, opts) => {
+  log({ context, opts });
   if (checkUserLoggedIn(context)) {
     try {
       const response = await axios({ ...opts, timeout: 10000 });
@@ -118,9 +128,15 @@ const spotifyAPICallsV2 = async (event, opts) => {
       const response = await axios({ ...opts, timeout: 10000 });
       return response.data;
     } catch (error) {
+      errorLog({ error });
       if (error.response) {
         // The request was made and the server responded with a non 2.x.x status
-        throw new HttpsError("unknown", error.message);
+        switch (error.response.status) {
+          case 404:
+            throw new HttpsError("not-found", error.message);
+          default:
+            throw new HttpsError("unknown", error.message);
+        }
       } else if (error.request) {
         // The request was made but no response was received
         throw new HttpsError("unavailable", "No response received.");
@@ -164,8 +180,9 @@ const _getAccessToken = (data, context) => {
   return spotifyAPICalls(context, opts);
 };
 
-const _getAccessTokenV2 = (data, context) => {
-  const { code, state, redirectURI } = data;
+const _getAccessTokenV2 = (event) => {
+  log({eventNew: event});
+  const { code, state, redirectURI } = event.data;
 
   const formBody = new URLSearchParams();
   formBody.set("grant_type", "authorization_code");
@@ -190,15 +207,17 @@ const _getAccessTokenV2 = (data, context) => {
     );
   }
 
-  return spotifyAPICallsV2(context, opts);
+  return spotifyAPICallsV2(event, opts);
 };
 
-exports.getAccessToken = functions.https.onCall(async (data, context) => {
+// exports.getAccessToken = functions.https.onCall(async (data, context) => {
+const getAccessToken = functions.https.onCall(async (data, context) => {
   return await _getAccessToken(data, context);
 });
 
-exports.getAccessTokenV2 = onCall(async (data, context) => {
-  return await _getAccessTokenV2(data, context);
+// exports.getAccessTokenV2 = onCall(async (event) => {
+const getAccessTokenV2 = onCall(async (event) => {
+  return await _getAccessTokenV2(event);
 });
 
 // Get refreshed access token
@@ -225,6 +244,7 @@ const _getRefreshedAccessToken = (data, context) => {
 };
 
 const _getRefreshedAccessTokenV2 = (request, event) => {
+  log({ requestRefresh: request, eventRefresh: event })
   const { refreshToken, redirectURI } = request.data;
 
   const formBody = new URLSearchParams();
@@ -246,12 +266,14 @@ const _getRefreshedAccessTokenV2 = (request, event) => {
   return spotifyAPICallsV2(event, opts);
 };
 
-exports.getRefreshedAccessToken = functions.https.onCall(async (data, context) => {
+// exports.getRefreshedAccessToken = functions.https.onCall(async (data, context) => {
+const getRefreshedAccessToken = functions.https.onCall(async (data, context) => {
   return await _getRefreshedAccessToken(data, context);
 });
 
-exports.getRefreshedAccessTokenV2 = onCall(async (data, context) => {
-  return await _getRefreshedAccessTokenV2(data, context);
+// exports.getRefreshedAccessTokenV2 = onCall(async (data, context) => {
+const getRefreshedAccessTokenV2 = onCall({ cors: true }, async (event) => {
+  return await _getRefreshedAccessTokenV2(event, event);
 });
 
 // Get Spotify Me
@@ -283,11 +305,13 @@ const _getMeV2 = (request) => {
   return spotifyAPICallsV2(request, opts);
 };
 
-exports.getMe = functions.https.onCall(async (data, context) => {
+// exports.getMe = functions.https.onCall(async (data, context) => {
+const getMe = functions.https.onCall(async (data, context) => {
   return await _getMe(data, context);
 });
 
-exports.getMeV2 = onCall({ cors: corsAllowed }, async (request) => {
+// exports.getMeV2 = onCall({ cors: corsAllowed }, async (request) => {
+const getMeV2 = onCall({ cors: corsAllowed }, async (request) => {
     return await _getMeV2(request);
 });
 
@@ -354,11 +378,13 @@ const _getAllPlaylistsV2 = async (request) => {
   return playlists;
 };
 
-exports.getAllPlaylists = functions.https.onCall(async (data, context) => {
+// exports.getAllPlaylists = functions.https.onCall(async (data, context) => {
+const getAllPlaylists = functions.https.onCall(async (data, context) => {
   return await _getAllPlaylists(data, context);
 });
 
-exports.getAllPlaylistsV2 = onCall(async (data, context) => {
+// exports.getAllPlaylistsV2 = onCall(async (data, context) => {
+const getAllPlaylistsV2 = onCall(async (data, context) => {
   return await _getAllPlaylistsV2(data, context);
 });
 
@@ -391,12 +417,14 @@ const _getPlaylistV2 = (data, context) => {
   return spotifyAPICallsV2(context, opts);
 };
 
-exports.getPlaylist = functions.https.onCall(async (data, context) => {
+// exports.getPlaylist = functions.https.onCall(async (data, context) => {
+const getPlaylist = functions.https.onCall(async (data, context) => {
   return await _getPlaylist(data, context);
 });
 
-exports.getPlaylistV2 = onCall(async (data, context) => {
-  return await _getPlaylistV2(data, context);
+// exports.getPlaylistV2 = onCall(async (data, context) => {
+const getPlaylistV2 = onCall(async (request) => {
+  return await _getPlaylistV2(request, request);
 });
 
 // Get songs from playlist
@@ -464,11 +492,13 @@ const _getAllSongsFromPlaylistV2 = async (data, context) => {
   return songs;
 };
 
-exports.getAllSongsFromPlaylist = functions.https.onCall(async (data, context) => {
+// exports.getAllSongsFromPlaylist = functions.https.onCall(async (data, context) => {
+const getAllSongsFromPlaylist = functions.https.onCall(async (data, context) => {
   return await _getAllSongsFromPlaylist(data, context);
 });
 
-exports.getAllSongsFromPlaylistV2 = onCall(async (data, context) => {
+// exports.getAllSongsFromPlaylistV2 = onCall(async (data, context) => {
+const getAllSongsFromPlaylistV2 = onCall(async (data, context) => {
   return await _getAllSongsFromPlaylistV2(data, context);
 });
 
@@ -505,11 +535,13 @@ const _deleteSongsFromPlaylistV2 = (data, context) => {
   return spotifyAPICallsV2(context, opts);
 };
 
-exports.deleteSongsFromPlaylist = functions.https.onCall(async (data, context) => {
+// exports.deleteSongsFromPlaylist = functions.https.onCall(async (data, context) => {
+const deleteSongsFromPlaylist = functions.https.onCall(async (data, context) => {
   return await _deleteSongsFromPlaylist(data, context);
 });
 
-exports.deleteSongsFromPlaylistV2 = onCall(async (data, context) => {
+// exports.deleteSongsFromPlaylistV2 = onCall(async (data, context) => {
+const deleteSongsFromPlaylistV2 = onCall(async (data, context) => {
   return await _deleteSongsFromPlaylistV2(data, context);
 });
 
@@ -542,11 +574,13 @@ const _unfollowPlaylistV2 = (data, context) => {
   return spotifyAPICallsV2(context, opts);
 };
 
-exports.unfollowPlaylist = functions.https.onCall(async (data, context) => {
+// exports.unfollowPlaylist = functions.https.onCall(async (data, context) => {
+const unfollowPlaylist = functions.https.onCall(async (data, context) => {
   return await _unfollowPlaylist(data, context);
 });
 
-exports.unfollowPlaylistV2 = onCall(async (data, context) => {
+// exports.unfollowPlaylistV2 = onCall(async (data, context) => {
+const unfollowPlaylistV2 = onCall(async (data, context) => {
   return await _unfollowPlaylistV2(data, context);
 });
 
@@ -589,11 +623,13 @@ const _createPlaylistV2 = (data, context) => {
   return spotifyAPICallsV2(context, opts);
 };
 
-exports.createPlaylist = functions.https.onCall(async (data, context) => {
+// exports.createPlaylist = functions.https.onCall(async (data, context) => {
+const createPlaylist = functions.https.onCall(async (data, context) => {
   return await _createPlaylist(data, context);
 });
 
-exports.createPlaylistV2 = onCall(async (data, context) => {
+// exports.createPlaylistV2 = onCall(async (data, context) => {
+const createPlaylistV2 = onCall(async (data, context) => {
   return await _createPlaylistV2(data, context);
 });
 
@@ -636,11 +672,13 @@ const _addSongsToPlaylistV2 = (data, context) => {
   return spotifyAPICallsV2(context, opts);
 };
 
-exports.addSongsToPlaylist = functions.https.onCall(async (data, context) => {
+// exports.addSongsToPlaylist = functions.https.onCall(async (data, context) => {
+const addSongsToPlaylist = functions.https.onCall(async (data, context) => {
   return await _addSongsToPlaylist(data, context);
 });
 
-exports.addSongsToPlaylistV2 = onCall(async (data, context) => {
+// exports.addSongsToPlaylistV2 = onCall(async (data, context) => {
+const addSongsToPlaylistV2 = onCall(async (data, context) => {
   return await _addSongsToPlaylistV2(data, context);
 });
 
@@ -673,17 +711,26 @@ const retry = (maxRetries, fn, sleepTime = 1000, name = "") => {
 const retryV2 = (maxRetries, fn, sleepTime = 1000, name = "") => {
   return fn().catch(async (error) => {
     if (maxRetries <= 0) {
-      console.log(error.message);
+      log({ error });
       throw new HttpsError("unknown", error.message);
     }
 
-    console.error("**ERROR**", error.message, JSON.stringify(error));
-    console.log(`*******waiting ${sleepTime / 1000}s before retrying*******`);
+    errorLog("**ERROR**", error.status, error.message, JSON.stringify(error));
+    
+    switch (error.status) {
+      case "NOT_FOUND":
+        log(">>>>>>>>>>>NOT FOUND<<<<<<<<<<<<<<<")
+        return null; //if resource is not found, then return/keep going
+      default:
+        break;
+    }
+
+    log(`*******waiting ${sleepTime / 1000}s before retrying*******`);
     if (name !== "") console.log(`TRIES LEFT: ${maxRetries} for ${name}`);
 
     await sleep(sleepTime);
 
-    return retry(maxRetries - 1, fn, sleepTime * 2);
+    return retryV2(maxRetries - 1, fn, sleepTime * 2);
   });
 };
 
@@ -1005,7 +1052,7 @@ const _RefreshCombinedPlaylistV2 = async (event, combo, firstRun = null) => {
 
   // check playlist still exists, else next
   console.log(`START CHECKING PLAYLIST EXISTS (${uid}, ${combo.id})`);
-  const playlist = await retry(retries, () =>
+  const playlist = await retryV2(retries, () =>
     _getPlaylistV2(
       {
         playlist_id: combo.id,
@@ -1025,7 +1072,7 @@ const _RefreshCombinedPlaylistV2 = async (event, combo, firstRun = null) => {
 
   if (!firstRun) {
     for (const playlist of combo.playlists) {
-      const spotifyPlaylist = await retry(retries, () =>
+      const spotifyPlaylist = await retryV2(retries, () =>
         _getPlaylistV2(
           {
             playlist_id: playlist.id,
@@ -1034,6 +1081,8 @@ const _RefreshCombinedPlaylistV2 = async (event, combo, firstRun = null) => {
           event
         )
       );
+      log({spotifyPlaylist});
+      if (!spotifyPlaylist) return;
 
       console.log({
         spotSnap: spotifyPlaylist.snapshot_id,
@@ -1088,7 +1137,7 @@ const _RefreshCombinedPlaylistV2 = async (event, combo, firstRun = null) => {
     `START REMOVING ${tracksURIFiltered.length} tracks in ${combo.name} (${uid}, ${combo.id})`
   );
   while (tracksURIFiltered.length > 0) {
-    const deleteResponse = await retry(retries, () =>
+    const deleteResponse = await retryV2(retries, () =>
       _deleteSongsFromPlaylistV2(
         {
           playlist_id: combo.id,
@@ -1181,7 +1230,8 @@ const _RefreshCombinedPlaylistV2 = async (event, combo, firstRun = null) => {
   return null;
 };
 
-exports.adminRefreshAllCombinedPlaylists = functions
+// exports.adminRefreshAllCombinedPlaylists = functions
+const adminRefreshAllCombinedPlaylists = functions
   .runWith({ timeoutSeconds: 540, memory: "2GB" })
   .https.onCall(async (data, context) => {
     if (await checkUserIsAdmin(context)) {
@@ -1191,7 +1241,7 @@ exports.adminRefreshAllCombinedPlaylists = functions
       return new Promise(async (resolve, reject) => {
         try {
           for (const combo of combinedPlaylists) {
-            await retry(
+            await retryV2(
               3,
               () => _RefreshCombinedPlaylist(context, combo),
               3000,
@@ -1209,7 +1259,8 @@ exports.adminRefreshAllCombinedPlaylists = functions
     return null;
   });
 
-exports.adminRefreshAllCombinedPlaylistsV2 = onCall({ cors: true, timeoutSeconds: 1200, memory: "256MB" }, async (request) => {
+// exports.adminRefreshAllCombinedPlaylistsV2 = onCall({ cors: true, timeoutSeconds: 1200, memory: "256MB" }, async (request) => {
+const adminRefreshAllCombinedPlaylistsV2 = onCall({ cors: true, timeoutSeconds: 1200, memory: "256MB" }, async (request) => {
     if (await checkUserIsAdminV2(request)) {
       // fetch all combined playlists
       const combinedPlaylists = await _fetchAllCombinedPlaylistsFromDbV2();
@@ -1235,35 +1286,36 @@ exports.adminRefreshAllCombinedPlaylistsV2 = onCall({ cors: true, timeoutSeconds
     return null;
   });
 
-exports.scheduledAdminRefreshAllCombinedPlaylists = functions
-  .runWith({ timeoutSeconds: 540, memory: "2GB" })
-  .pubsub.schedule("every 12 hours")
-  .onRun(async (context) => {
-    console.log("*** Scheduled run of Admin Refresh all ***");
+// exports.scheduledAdminRefreshAllCombinedPlaylists = functions
+//   .runWith({ timeoutSeconds: 540, memory: "2GB" })
+//   .pubsub.schedule("every 12 hours")
+//   .onRun(async (context) => {
+//     console.log("*** Scheduled run of Admin Refresh all ***");
 
-    // fetch all combined playlists
-    const combinedPlaylists = await _fetchAllCombinedPlaylistsFromDb();
+//     // fetch all combined playlists
+//     const combinedPlaylists = await _fetchAllCombinedPlaylistsFromDb();
 
-    console.log(`BEGIN REFRESH FOR ${combinedPlaylists.length} combos`);
-    return new Promise(async (resolve, reject) => {
-      try {
-        for (const combo of combinedPlaylists) {
-          await retry(
-            3,
-            () => _RefreshCombinedPlaylist(context, combo),
-            3000,
-            combo.name
-          );
-        }
+//     console.log(`BEGIN REFRESH FOR ${combinedPlaylists.length} combos`);
+//     return new Promise(async (resolve, reject) => {
+//       try {
+//         for (const combo of combinedPlaylists) {
+//           await retry(
+//             3,
+//             () => _RefreshCombinedPlaylist(context, combo),
+//             3000,
+//             combo.name
+//           );
+//         }
 
-        return resolve("Synch Finished");
-      } catch (error) {
-        return reject(error.message);
-      }
-    });
-  });
+//         return resolve("Synch Finished");
+//       } catch (error) {
+//         return reject(error.message);
+//       }
+//     });
+//   });
 
-exports.scheduledAdminRefreshAllCombinedPlaylistsV2 = onSchedule({ schedule: "every 12 hours", timeoutSeconds: 1200, memory: "256MB" }, async (event) => {
+// exports.scheduledAdminRefreshAllCombinedPlaylistsV2 = onSchedule({ schedule: "every 12 hours", timeoutSeconds: 1200, memory: "256MB" }, async (event) => {
+const scheduledAdminRefreshAllCombinedPlaylistsV2 = onSchedule({ schedule: "every 12 hours", timeoutSeconds: 1200, memory: "256MB" }, async (event) => {
     console.log("*** Scheduled run of Admin Refresh all ***");
 
     // fetch all combined playlists
@@ -1289,7 +1341,8 @@ exports.scheduledAdminRefreshAllCombinedPlaylistsV2 = onSchedule({ schedule: "ev
     });
   });
 
-exports.refreshNewCombinedPlaylist = functions
+// exports.refreshNewCombinedPlaylist = functions
+const refreshNewCombinedPlaylist = functions
   .runWith({ timeoutSeconds: 90 })
   .https.onCall(async (data, context) => {
     const { combo } = data;
@@ -1312,7 +1365,8 @@ exports.refreshNewCombinedPlaylist = functions
     }
   });
 
-exports.refreshNewCombinedPlaylistV2 = onCall({ timeoutSeconds: 90 }, async (request) => {
+// exports.refreshNewCombinedPlaylistV2 = onCall({ timeoutSeconds: 90 }, async (request) => {
+const refreshNewCombinedPlaylistV2 = onCall({ timeoutSeconds: 90 }, async (request) => {
     const { combo } = request.data;
 
     if (checkUserLoggedInV2(request) && checkUserIsSelfV2(request, combo.uid)) {
@@ -1333,7 +1387,8 @@ exports.refreshNewCombinedPlaylistV2 = onCall({ timeoutSeconds: 90 }, async (req
     }
   });
 
-exports.backupCombinedPlaylists = functions.https.onCall(async (data, context) => {
+// exports.backupCombinedPlaylists = functions.https.onCall(async (data, context) => {
+const backupCombinedPlaylists = functions.https.onCall(async (data, context) => {
   if (await checkUserIsAdmin(context)) {
     const fetchCollection = "combined_playlists";
     const backupCollection = "combined_playlists_backup";
@@ -1364,7 +1419,8 @@ exports.backupCombinedPlaylists = functions.https.onCall(async (data, context) =
   return null;
 });
 
-exports.backupCombinedPlaylistsV2 = onCall(async (data, context) => {
+// exports.backupCombinedPlaylistsV2 = onCall(async (data, context) => {
+const backupCombinedPlaylistsV2 = onCall(async (data, context) => {
   if (await checkUserIsAdminV2(context)) {
     const fetchCollection = "combined_playlists";
     const backupCollection = "combined_playlists_backup";
@@ -1395,5 +1451,32 @@ exports.backupCombinedPlaylistsV2 = onCall(async (data, context) => {
   return null;
 });
 
-//END   -- UTILS --
-//----------------------------------------------------------------------
+export {
+  getAccessToken,
+  getAccessTokenV2,
+  getRefreshedAccessToken,
+  getRefreshedAccessTokenV2,
+  getMe,
+  getMeV2,
+  getAllPlaylists,
+  getAllPlaylistsV2,
+  getPlaylist,
+  getPlaylistV2,
+  getAllSongsFromPlaylist,
+  getAllSongsFromPlaylistV2,
+  deleteSongsFromPlaylist,
+  deleteSongsFromPlaylistV2,
+  unfollowPlaylist,
+  unfollowPlaylistV2,
+  createPlaylist,
+  createPlaylistV2,
+  addSongsToPlaylist,
+  addSongsToPlaylistV2,
+  adminRefreshAllCombinedPlaylists,
+  adminRefreshAllCombinedPlaylistsV2,
+  scheduledAdminRefreshAllCombinedPlaylistsV2,
+  refreshNewCombinedPlaylist,
+  refreshNewCombinedPlaylistV2,
+  backupCombinedPlaylists,
+  backupCombinedPlaylistsV2
+};

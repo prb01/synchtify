@@ -145,7 +145,7 @@ const CreateComboPlaylist = (props) => {
                                   owner: playlist.owner.display_name,
                                   snapshotId: playlist.snapshot_id,
                                   cover:
-                                    playlist.images.length > 0
+                                    playlist.images?.length > 0
                                       ? playlist.images[0].url
                                       : "",
                                 })}

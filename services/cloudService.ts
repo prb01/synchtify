@@ -14,11 +14,11 @@ async function cloudAPICall(cloudFunction, payload = {}) : Promise<any> {
 }
 
 async function getAccessToken(code, state, redirectURI) : Promise<any> {
-  return cloudAPICall("getAccessToken", { code, state, redirectURI });
+  return cloudAPICall("getAccessTokenV2", { code, state, redirectURI });
 }
 
 async function getRefreshedAccessToken(refreshToken, redirectURI) : Promise<any> {
-  return cloudAPICall("getRefreshedAccessToken", { refreshToken, redirectURI });
+  return cloudAPICall("getRefreshedAccessTokenV2", { refreshToken, redirectURI });
 }
 
 async function getMe(access_token) : Promise<any> {

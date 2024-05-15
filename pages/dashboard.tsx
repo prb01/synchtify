@@ -56,6 +56,7 @@ const Dashboard = () => {
     if (!router.isReady) return;
     const code = router.query.code;
     const state = router.query.state;
+    console.log({code, state});
 
     // if no userData, then return
     if (!user.isLoaded) return;
