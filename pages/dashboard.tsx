@@ -20,7 +20,7 @@ import { fetchSpotifyMe } from "../redux/spotifyUser";
 import KofiWidget from "../components/KofiWidget";
 
 const Dashboard = () => {
-  const { isLoading, isAuthenticated } = useAuth();
+  const { isLoading, isAuthenticated, user: authUser } = useAuth();
   const dispatch = useAppDispatch();
   const router = useRouter();
   const redirectURI = getRedirectURI();
@@ -63,7 +63,13 @@ const Dashboard = () => {
 
     // trigger if spotify has been authorized (code & state comes from Spotify)
     if (code && state) {
-      dispatch(addSpotifyAuth({ uid: user.data.uid, code, state, redirectURI }));
+      // Get uid from Firebase Auth user, not from Firestore user data
+      const uid = authUser?.uid || user.data?.uid;
+      if (!uid) {
+        console.error('No uid available from auth user or user data');
+        return;
+      }
+      dispatch(addSpotifyAuth({ uid, code, state, redirectURI }));
       router.push("/dashboard");
       return;
     }
@@ -76,9 +82,14 @@ const Dashboard = () => {
 
     // If updated over 60mins ago, then trigger a token refresh
     if (user.data.access_token && lastUpdateInMins > 60) {
+      const uid = authUser?.uid || user.data?.uid;
+      if (!uid) {
+        console.error('No uid available from auth user or user data');
+        return;
+      }
       dispatch(
         updateSpotifyAuth({
-          uid: user.data.uid,
+          uid,
           refresh_token: user.data.refresh_token,
           redirectURI,
         })
@@ -116,16 +127,24 @@ const Dashboard = () => {
           );
 
           // fetch their combined Playlists as well from DB
-          dispatch(fetchCombinedPlaylistsByUid({ uid: user.data.uid }));
+          const uid = authUser?.uid || user.data?.uid;
+          if (uid) {
+            dispatch(fetchCombinedPlaylistsByUid({ uid }));
+          }
         }
       );
     }
   }, [isLoading, isAuthenticated, router.isReady, user.isLoaded, user.data]);
 
   const handleRefreshToken = () => {
+    const uid = authUser?.uid || user.data?.uid;
+    if (!uid) {
+      console.error('No uid available from auth user or user data');
+      return;
+    }
     dispatch(
       updateSpotifyAuth({
-        uid: user.data.uid,
+        uid,
         refresh_token: user.data.refresh_token,
         redirectURI,
       })

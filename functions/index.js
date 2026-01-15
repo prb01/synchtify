@@ -180,7 +180,7 @@ const _getAccessToken = (data, context) => {
   return spotifyAPICalls(context, opts);
 };
 
-const _getAccessTokenV2 = (event) => {
+const _getAccessTokenV2 = async (event) => {
   log({eventNew: event});
   const { code, state, redirectURI } = event.data;
 
@@ -207,7 +207,7 @@ const _getAccessTokenV2 = (event) => {
     );
   }
 
-  return spotifyAPICallsV2(event, opts);
+  return await spotifyAPICallsV2(event, opts);
 };
 
 // exports.getAccessToken = functions.https.onCall(async (data, context) => {
@@ -291,7 +291,7 @@ const _getMe = (data, context) => {
   return spotifyAPICalls(context, opts);
 };
 
-const _getMeV2 = (request) => {
+const _getMeV2 = async (request) => {
   const { access_token } = request.data;
   const opts = {
     url: `${apiURI}/me`,
@@ -302,7 +302,26 @@ const _getMeV2 = (request) => {
     },
   };
 
-  return spotifyAPICallsV2(request, opts);
+  // For getMe, we don't need to check auth since we're using the Spotify access token
+  // Just make the API call directly
+  try {
+    const response = await axios({ ...opts, timeout: 10000 });
+    return response.data;
+  } catch (error) {
+    errorLog({ error });
+    if (error.response) {
+      switch (error.response.status) {
+        case 404:
+          throw new HttpsError("not-found", error.message);
+        default:
+          throw new HttpsError("unknown", error.message);
+      }
+    } else if (error.request) {
+      throw new HttpsError("unavailable", "No response received.");
+    } else {
+      throw new HttpsError("unknown", error.message);
+    }
+  }
 };
 
 // exports.getMe = functions.https.onCall(async (data, context) => {

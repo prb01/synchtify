@@ -121,9 +121,9 @@ async function _fetchCombinedPlaylistsByUidFromDb(uid) {
   querySnapshot.forEach((doc) => {  
     data.push(
       {
-        id: doc.id,
+        id: doc.id, // Document ID is the Spotify playlist ID (matches backend)
         ...doc.data(),
-        updatedAt: doc["updatedAt"]?.toDate().toISOString(),
+        updatedAt: doc.data()["updatedAt"]?.toDate().toISOString(),
       });
   });
 
@@ -132,7 +132,7 @@ async function _fetchCombinedPlaylistsByUidFromDb(uid) {
 
 async function _createCombinedPlaylistInDb(id, url, uid, name, playlists) {
   const combinedPlaylistRef = collection(db, "combined_playlists");
-  await setDoc(doc(combinedPlaylistRef, uid), {
+  await setDoc(doc(combinedPlaylistRef, id), { // Use Spotify playlist ID as document ID (matches backend)
     uid,
     url,
     name,

@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "spotifyprb01",
     "public": "out",
     "ignore": [
       "firebase.json",

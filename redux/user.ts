@@ -211,15 +211,26 @@ async function _updateUserData(
   access_token: string,
   refresh_token: string
 ) {
+  if (!uid) {
+    throw new Error('uid is required');
+  }
+  
   const updateFields = refresh_token
     ? { access_token, refresh_token }
     : { access_token };
   
   const userRef = doc(db, "users", uid);
-  const result = await updateDoc(userRef, {
-    ...updateFields,
+  
+  try {
+    // Use setDoc with merge: true to create or update the document
+    const dataToWrite = {
+      uid,
+      ...updateFields,
       updatedAt: serverTimestamp(),
-  })
-
-  return result;
+    };
+    const result = await setDoc(userRef, dataToWrite, { merge: true });
+    return result;
+  } catch (error) {
+    throw error;
+  }
 }

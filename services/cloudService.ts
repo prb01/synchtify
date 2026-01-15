@@ -6,10 +6,11 @@ const functions = getFunctions(app, "us-central1");
 async function cloudAPICall(cloudFunction, payload = {}) : Promise<any> {
   try {
     const _functionCall = httpsCallable(functions, cloudFunction);
-    const { data } = await _functionCall(payload);
-    return data;
+    const response = await _functionCall(payload);
+    return response.data;
   } catch (error) {
     console.log(JSON.stringify(error));
+    throw error;
   }
 }
 

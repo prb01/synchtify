@@ -57,7 +57,7 @@ const ComboPlaylist = ({ combinedPlaylist, idx }) => {
             <Col sm={2}>
               <Button
                 color="accent"
-                onClick={() => deleteComboPlaylist(idx)}
+                onClick={() => deleteComboPlaylist(combinedPlaylist.id)}
                 disabled={isLoading}
               >
                 Delete
