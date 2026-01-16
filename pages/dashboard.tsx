@@ -171,8 +171,8 @@ const Dashboard = () => {
             Loading...
           </Spinner>
         )}
-        {user.hasErrors && "Error: Please try refreshing"}
-        {user.isLoaded && !user.hasErrors && !user.data.access_token && (
+        {user.hasErrors && user.data.access_token && "Error: Please try refreshing"}
+        {user.isLoaded && !user.data.access_token && (
           <div className="position-absolute top-50 start-50 translate-middle d-flex flex-column justify-content-center align-items-center overflow-hidden">
             <h1 className="text-text mb-3">Connect your Spotify Account to start</h1>
             <div className="d-flex justify-content-center">
